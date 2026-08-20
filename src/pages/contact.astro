@@ -1,0 +1,57 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ContactForm from '../components/ContactForm.astro';
+import { site, socials } from '../config/site';
+
+const hasForm = site.contactFormKey !== '';
+
+// Say only what is true of this build. Promising "the links below" when none are
+// configured is the kind of small contradiction a reader notices.
+const lead = hasForm
+  ? 'A short note about what you are working on is enough to start. Replies usually go out within a couple of days.'
+  : socials.length > 0
+    ? 'The form is not set up for this build. The links below reach me directly.'
+    : 'No contact channels are configured for this build yet.';
+---
+
+<BaseLayout title="Contact" description={`Get in touch with ${site.name}.`}>
+  <div class="mx-auto w-full max-w-shell px-6 py-16 sm:px-8 sm:py-24">
+    <header class="max-w-measure border-b border-line pb-8">
+      <h1 class="text-3xl text-ink">Contact</h1>
+      <p class="mt-4 text-body">{lead}</p>
+    </header>
+
+    <ContactForm />
+
+    {
+      import.meta.env.DEV && !hasForm && (
+        <p class="mt-8 max-w-measure text-sm text-muted">
+          Set <code class="font-mono">PUBLIC_CONTACT_FORM_KEY</code> in{' '}
+          <code class="font-mono">.env</code> to render the form. See{' '}
+          <code class="font-mono">.env.example</code>.
+        </p>
+      )
+    }
+
+    {
+      socials.length > 0 && (
+        <section class="mt-16">
+          <h2 class="text-sm font-semibold tracking-wide text-ink uppercase">Elsewhere</h2>
+          <ul class="mt-4 border-t border-line">
+            {socials.map((social) => (
+              <li class="border-b border-line">
+                <a
+                  href={social.url}
+                  rel="me noopener"
+                  class="block py-3 text-sm text-accent-strong transition-colors duration-150 hover:bg-accent-wash"
+                >
+                  {social.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </div>
+</BaseLayout>

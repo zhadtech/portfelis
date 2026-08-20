@@ -1,0 +1,144 @@
+---
+import { site } from '../config/site';
+
+// Web3Forms posts straight from the browser — no server, no build-time secret.
+// The access key is public by design: it identifies the form, not the account.
+// Do not "fix" this by moving it out of the bundle; there is nowhere to move it to.
+const ENDPOINT = 'https://api.web3forms.com/submit';
+
+const FIELD =
+  'border-line bg-page text-ink focus:border-accent w-full border px-3 py-2 text-base transition-colors duration-150 outline-none';
+const LABEL = 'text-ink block text-sm font-medium';
+---
+
+{
+  /* Never render a form that cannot submit — the page decides what to show instead. */
+  site.contactFormKey && (
+    <form id="contact-form" method="POST" action={ENDPOINT} class="mt-10 grid max-w-measure gap-6">
+      <input type="hidden" name="access_key" value={site.contactFormKey} />
+      <input type="hidden" name="subject" value={`New message via ${site.name}`} />
+      <input type="hidden" name="from_name" value={site.name} />
+
+      {/* Honeypot. Bots fill it, people never see it. */}
+      <input
+        type="checkbox"
+        name="botcheck"
+        class="hidden"
+        style="display:none"
+        tabindex="-1"
+        autocomplete="off"
+        aria-hidden="true"
+      />
+
+      <div class="grid gap-2">
+        <label for="contact-name" class={LABEL}>
+          Name
+        </label>
+        <input
+          id="contact-name"
+          type="text"
+          name="name"
+          autocomplete="name"
+          required
+          class={FIELD}
+        />
+      </div>
+
+      <div class="grid gap-2">
+        <label for="contact-email" class={LABEL}>
+          Email
+        </label>
+        <input
+          id="contact-email"
+          type="email"
+          name="email"
+          autocomplete="email"
+          required
+          class={FIELD}
+        />
+      </div>
+
+      <div class="grid gap-2">
+        <label for="contact-message" class={LABEL}>
+          Message
+        </label>
+        <textarea id="contact-message" name="message" rows="6" required class={FIELD} />
+      </div>
+
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+        <button
+          type="submit"
+          class="border border-accent px-5 py-2 text-sm text-accent-strong transition-colors duration-150 hover:bg-accent-wash disabled:cursor-not-allowed disabled:border-line disabled:text-muted"
+        >
+          Send message
+        </button>
+
+        <p id="contact-status" role="status" aria-live="polite" class="text-sm text-muted" />
+      </div>
+
+      <noscript>
+        <p class="text-sm text-muted">
+          This form submits with JavaScript, which is currently disabled. Use the links below
+          instead.
+        </p>
+      </noscript>
+    </form>
+  )
+}
+
+<script>
+  const form = document.getElementById('contact-form');
+
+  if (form instanceof HTMLFormElement) {
+    const status = document.getElementById('contact-status');
+    const button = form.querySelector('button[type="submit"]');
+
+    const say = (message: string, tone: 'muted' | 'ok' | 'error') => {
+      if (!status) return;
+      status.textContent = message;
+      status.className =
+        tone === 'error'
+          ? 'text-sm text-accent-strong'
+          : tone === 'ok'
+            ? 'text-sm text-ink'
+            : 'text-sm text-muted';
+    };
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const data = new FormData(form);
+      // Honeypot tripped: behave as if nothing happened.
+      if (data.get('botcheck')) return;
+
+      if (button instanceof HTMLButtonElement) button.disabled = true;
+      say('Sending…', 'muted');
+
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+          body: data,
+        });
+        const result = await response.json().catch(() => ({}));
+
+        if (response.ok && result.success) {
+          form.reset();
+          say('Message sent. Thank you.', 'ok');
+          return;
+        }
+
+        say(
+          typeof result.message === 'string'
+            ? result.message
+            : 'Something went wrong. Please try again.',
+          'error',
+        );
+      } catch {
+        say('Could not reach the form service. Try again, or use the links below.', 'error');
+      }
+
+      if (button instanceof HTMLButtonElement) button.disabled = false;
+    });
+  }
+</script>

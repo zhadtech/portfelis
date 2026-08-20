@@ -1,0 +1,76 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import PostCard from '../components/PostCard.astro';
+import { site } from '../config/site';
+import { href } from '../lib/paths';
+import { getPosts, getProjectsByPriority } from '../lib/content';
+
+const projects = (await getProjectsByPriority()).slice(0, 3);
+const posts = (await getPosts()).slice(0, 3);
+---
+
+<BaseLayout title={site.name} description={site.tagline}>
+  <div class="mx-auto w-full max-w-shell px-6 sm:px-8">
+    <section class="border-b border-line py-20 sm:py-28">
+      <h1 class="max-w-measure text-3xl text-ink sm:text-4xl">{site.tagline}</h1>
+      <p class="mt-6 text-sm text-muted">{site.handle}</p>
+    </section>
+
+    {
+      projects.length > 0 && (
+        <section class="py-16 sm:py-20">
+          <div class="flex items-baseline justify-between gap-4 border-b border-line pb-4">
+            <h2 class="text-sm font-semibold tracking-wide text-ink uppercase">Work</h2>
+            <a
+              href={href('/projects')}
+              class="text-sm text-muted transition-colors duration-150 hover:text-accent-strong"
+            >
+              All projects
+            </a>
+          </div>
+
+          <div class="mt-10 grid gap-10 sm:grid-cols-2">
+            {projects.map((project) => (
+              <ProjectCard project={project} headingLevel="h3" />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      posts.length > 0 && (
+        <section class="border-t border-line py-16 sm:py-20">
+          <div class="flex items-baseline justify-between gap-4 border-b border-line pb-4">
+            <h2 class="text-sm font-semibold tracking-wide text-ink uppercase">Writing</h2>
+            <a
+              href={href('/blog')}
+              class="text-sm text-muted transition-colors duration-150 hover:text-accent-strong"
+            >
+              All posts
+            </a>
+          </div>
+
+          <div class="mt-4">
+            {posts.map((post) => (
+              <PostCard post={post} showTags={false} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <section class="border-t border-line py-16 sm:py-20">
+      <p class="max-w-measure text-body">
+        Open to new work and short conversations about it.
+        <a
+          href={href('/contact')}
+          class="text-accent-strong decoration-line underline-offset-4 transition-colors duration-150 hover:underline"
+        >
+          Get in touch
+        </a>.
+      </p>
+    </section>
+  </div>
+</BaseLayout>

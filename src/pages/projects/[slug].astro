@@ -1,0 +1,73 @@
+---
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import ProseLayout from '../../layouts/ProseLayout.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import { href } from '../../lib/paths';
+import { getProjects } from '../../lib/content';
+
+// Entry ids come from the file name, so content files must stay flat — a nested
+// folder would put a slash in the slug. See src/pages/_AGENTS.md.
+export const getStaticPaths = (async () => {
+  const projects = await getProjects();
+  return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}) satisfies GetStaticPaths;
+
+const { project } = Astro.props;
+const { title, description, date, tech, repo, demo, cover, draft } = project.data;
+const { Content } = await render(project);
+
+const links = [
+  repo ? { label: 'Repository', url: repo } : null,
+  demo ? { label: 'Demo', url: demo } : null,
+].filter((link) => link !== null);
+---
+
+<ProseLayout title={title} description={description}>
+  <Fragment slot="header">
+    {
+      draft && (
+        <p class="mb-4 text-sm text-accent-strong">Draft — not included in a production build.</p>
+      )
+    }
+
+    <h1 class="text-3xl text-ink">{title}</h1>
+    <p class="mt-4 text-body">{description}</p>
+
+    <div class="mt-6 flex flex-wrap items-baseline gap-x-6 gap-y-2 text-sm text-muted">
+      <FormattedDate date={date} />
+      {tech.length > 0 && <span>{tech.join(' · ')}</span>}
+    </div>
+
+    {
+      links.length > 0 && (
+        <ul class="mt-6 flex gap-5 text-sm">
+          {links.map((link) => (
+            <li>
+              <a
+                href={link.url}
+                rel="noopener"
+                class="text-accent-strong decoration-line underline-offset-4 transition-colors duration-150 hover:underline"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </Fragment>
+
+  {cover && <Image src={cover} alt="" widths={[640, 1024]} sizes="(min-width: 68ch) 68ch, 100vw" />}
+  <Content />
+
+  <Fragment slot="footer">
+    <a
+      href={href('/projects')}
+      class="text-sm text-muted transition-colors duration-150 hover:text-accent-strong"
+    >
+      All projects
+    </a>
+  </Fragment>
+</ProseLayout>

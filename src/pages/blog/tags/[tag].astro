@@ -1,0 +1,44 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PostCard from '../../../components/PostCard.astro';
+import TagList from '../../../components/TagList.astro';
+import { href } from '../../../lib/paths';
+import { getAllTags, getPostsByTag } from '../../../lib/content';
+
+export const getStaticPaths = (async () => {
+  const tags = await getAllTags();
+  return Promise.all(
+    tags.map(async (tag) => ({
+      params: { tag: tag.slug },
+      props: { tag, posts: await getPostsByTag(tag.slug) },
+    })),
+  );
+}) satisfies GetStaticPaths;
+
+const { tag, posts } = Astro.props;
+const allTags = await getAllTags();
+const count = `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}`;
+---
+
+<BaseLayout title={`Tagged ${tag.tag}`} description={`Posts tagged ${tag.tag}. ${count}.`}>
+  <div class="mx-auto w-full max-w-shell px-6 py-16 sm:px-8 sm:py-24">
+    <header class="max-w-measure border-b border-line pb-8">
+      <p class="text-sm text-muted">
+        <a href={href('/blog')} class="transition-colors duration-150 hover:text-accent-strong">
+          Writing
+        </a>
+      </p>
+      <h1 class="mt-3 text-3xl text-ink">{tag.tag}</h1>
+      <p class="tabular mt-4 text-sm text-muted">{count}</p>
+    </header>
+
+    <nav aria-label="Tags" class="mt-8">
+      <TagList tags={allTags} activeSlug={tag.slug} showCounts />
+    </nav>
+
+    <div class="mt-10">
+      {posts.map((post) => <PostCard post={post} showTags={false} />)}
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,67 @@
+---
+import FormattedDate from './FormattedDate.astro';
+import { href } from '../lib/paths';
+import type { Project } from '../lib/content';
+
+interface Props {
+  project: Project;
+  /** Render the heading as h2 (in a section) or h3 (nested deeper). */
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { project, headingLevel = 'h2' } = Astro.props;
+const { title, description, date, tech, repo, demo } = project.data;
+const Heading = headingLevel;
+
+const links = [
+  repo ? { label: 'Repository', url: repo } : null,
+  demo ? { label: 'Demo', url: demo } : null,
+].filter((link) => link !== null);
+---
+
+<article class="group border-t border-line pt-6">
+  <div class="flex items-baseline justify-between gap-4">
+    <Heading class="text-lg">
+      <a
+        href={href(`/projects/${project.id}`)}
+        class="text-ink decoration-line underline-offset-4 transition-colors duration-150 group-hover:text-accent-strong hover:underline"
+      >
+        {title}
+      </a>
+    </Heading>
+    <FormattedDate date={date} class="shrink-0 text-sm text-muted" />
+  </div>
+
+  <p class="mt-3 max-w-[46ch] text-sm text-body">{description}</p>
+
+  {
+    tech.length > 0 && (
+      <p class="mt-4 text-sm text-muted">
+        {tech.map((item, index) => (
+          <>
+            {index > 0 && <span class="mx-1.5 text-line">·</span>}
+            {item}
+          </>
+        ))}
+      </p>
+    )
+  }
+
+  {
+    links.length > 0 && (
+      <ul class="mt-4 flex gap-5 text-sm">
+        {links.map((link) => (
+          <li>
+            <a
+              href={link.url}
+              rel="noopener"
+              class="text-accent-strong decoration-line underline-offset-4 transition-colors duration-150 hover:underline"
+            >
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</article>

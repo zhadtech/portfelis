@@ -1,0 +1,48 @@
+---
+import { render } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import ProseLayout from '../../layouts/ProseLayout.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import TagList from '../../components/TagList.astro';
+import { href } from '../../lib/paths';
+import { getPosts } from '../../lib/content';
+
+// See the note in src/pages/projects/[slug].astro about flat content files.
+export const getStaticPaths = (async () => {
+  const posts = await getPosts();
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}) satisfies GetStaticPaths;
+
+const { post } = Astro.props;
+const { title, description, date, tags, draft } = post.data;
+const { Content } = await render(post);
+---
+
+<ProseLayout title={title} description={description}>
+  <Fragment slot="header">
+    {
+      draft && (
+        <p class="mb-4 text-sm text-accent-strong">Draft — not included in a production build.</p>
+      )
+    }
+
+    <h1 class="text-3xl text-ink">{title}</h1>
+    <p class="mt-4 text-body">{description}</p>
+
+    <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+      <FormattedDate date={date} class="text-sm text-muted" />
+      {tags.length > 0 && <TagList tags={tags} />}
+    </div>
+  </Fragment>
+
+  <Content />
+
+  <Fragment slot="footer">
+    <a
+      href={href('/blog')}
+      class="text-sm text-muted transition-colors duration-150 hover:text-accent-strong"
+    >
+      All posts
+    </a>
+  </Fragment>
+</ProseLayout>

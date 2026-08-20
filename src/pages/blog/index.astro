@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import TagList from '../../components/TagList.astro';
+import { getAllTags, getPosts } from '../../lib/content';
+
+const posts = await getPosts();
+const tags = await getAllTags();
+---
+
+<BaseLayout title="Writing" description="Notes on building things, kept short and specific.">
+  <div class="mx-auto w-full max-w-shell px-6 py-16 sm:px-8 sm:py-24">
+    <header class="max-w-measure border-b border-line pb-8">
+      <h1 class="text-3xl text-ink">Writing</h1>
+      <p class="mt-4 text-body">Notes on building things. Short, specific, occasionally wrong.</p>
+    </header>
+
+    {
+      tags.length > 0 && (
+        <nav aria-label="Tags" class="mt-8">
+          <TagList tags={tags} showCounts />
+        </nav>
+      )
+    }
+
+    {
+      posts.length > 0 ? (
+        <div class="mt-10">
+          {posts.map((post) => (
+            <PostCard post={post} />
+          ))}
+        </div>
+      ) : (
+        <p class="mt-12 text-muted">No posts published yet.</p>
+      )
+    }
+  </div>
+</BaseLayout>

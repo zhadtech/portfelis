@@ -1,0 +1,35 @@
+{
+  "name": "portfelis",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check": "astro check",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "docs:check": "node scripts/check-docs.mjs"
+  },
+  "dependencies": {
+    "@astrojs/rss": "^4.0.19",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.2.4",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@types/node": "^26.2.0",
+    "prettier": "^3.9.6",
+    "prettier-plugin-astro": "^0.14.1",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "typescript": "^6.0.3"
+  },
+  "optionalDependencies": {
+    "@bruits/satteri-darwin-arm64": "0.10.3"
+  }
+}

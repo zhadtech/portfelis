@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { href } from '../lib/paths';
+import { nav } from '../config/site';
+---
+
+<BaseLayout title="Page not found" description="That page does not exist.">
+  <div class="mx-auto w-full max-w-shell px-6 py-24 sm:px-8 sm:py-32">
+    <p class="tabular text-sm text-muted">404</p>
+    <h1 class="mt-3 text-3xl text-ink">That page does not exist</h1>
+    <p class="mt-4 max-w-measure text-body">
+      The link may be out of date, or the page may have been renamed.
+    </p>
+
+    <ul class="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm">
+      <li>
+        <a
+          href={href('/')}
+          class="text-accent-strong decoration-line underline-offset-4 transition-colors duration-150 hover:underline"
+        >
+          Home
+        </a>
+      </li>
+      {
+        nav.map((item) => (
+          <li>
+            <a
+              href={href(item.path)}
+              class="text-accent-strong decoration-line underline-offset-4 transition-colors duration-150 hover:underline"
+            >
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</BaseLayout>

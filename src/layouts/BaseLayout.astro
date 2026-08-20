@@ -1,0 +1,66 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../config/site';
+import { href } from '../lib/paths';
+import { usingSamples } from '../lib/content';
+
+interface Props {
+  /** Page title, without the site name — this layout appends it. */
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+
+const pageTitle = title === site.name ? site.name : `${title} · ${site.name}`;
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
+
+// Placeholder content is a build-time condition worth seeing while developing and
+// never worth showing a reader.
+const showSampleNotice = import.meta.env.DEV && (await usingSamples());
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href={href('/favicon.svg')} />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={`${site.name} — writing`}
+      href={href('/rss.xml')}
+    />
+  </head>
+
+  <body class="flex min-h-screen flex-col bg-page font-sans text-body">
+    <a
+      href="#main"
+      class="sr-only border-line bg-page text-ink focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-10 focus:border focus:px-4 focus:py-2 focus:ring-accent"
+    >
+      Skip to content
+    </a>
+
+    <Header />
+
+    {
+      showSampleNotice && (
+        <p class="border-b border-line px-6 py-2 text-center text-sm text-muted sm:px-8">
+          Showing placeholder content — the private content submodules are not mounted.
+        </p>
+      )
+    }
+
+    <main id="main" class="flex-1">
+      <slot />
+    </main>
+
+    <Footer />
+  </body>
+</html>

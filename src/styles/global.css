@@ -1,0 +1,263 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   THE KNOB
+   One hue drives every color on the site. Change this number and nothing else;
+   the whole palette moves with it, coherently, because every other color below
+   varies only in lightness and chroma.
+   30 = warm amber. 150 = green. 212 = blue. 280 = violet.
+   --------------------------------------------------------------------------- */
+:root {
+  --hue-brand: 212;
+}
+
+@theme {
+  /* Surfaces and text. Neutrals carry a trace of the brand hue (chroma 0.002–0.024)
+     rather than being pure grey — that is what keeps the page from feeling assembled. */
+  --color-page: oklch(0.995 0.002 var(--hue-brand));
+  --color-surface: oklch(0.975 0.005 var(--hue-brand));
+  --color-line: oklch(0.905 0.01 var(--hue-brand));
+  --color-muted: oklch(0.62 0.014 var(--hue-brand));
+  --color-body: oklch(0.44 0.018 var(--hue-brand));
+  --color-ink: oklch(0.22 0.024 var(--hue-brand));
+
+  /* The same hue, carrying real chroma. */
+  --color-accent: oklch(0.55 0.14 var(--hue-brand));
+  --color-accent-strong: oklch(0.45 0.15 var(--hue-brand));
+  --color-accent-wash: oklch(0.96 0.02 var(--hue-brand));
+
+  /* System stack: no network request, first paint is the final paint.
+     Swap here — and only here — if a webfont is ever wanted. */
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+  /* One type scale, ratio 1.2, anchored at 1rem. No ad-hoc sizes in components.
+     Line height tightens as size grows; large sizes tighten optically too. */
+  --text-xs: 0.694rem;
+  --text-xs--line-height: 1.5;
+  --text-sm: 0.833rem;
+  --text-sm--line-height: 1.55;
+  --text-base: 1rem;
+  --text-base--line-height: 1.65;
+  --text-lg: 1.2rem;
+  --text-lg--line-height: 1.55;
+  --text-xl: 1.44rem;
+  --text-xl--line-height: 1.35;
+  --text-2xl: 1.728rem;
+  --text-2xl--line-height: 1.25;
+  --text-2xl--letter-spacing: -0.01em;
+  --text-3xl: 2.074rem;
+  --text-3xl--line-height: 1.15;
+  --text-3xl--letter-spacing: -0.015em;
+  --text-4xl: 2.488rem;
+  --text-4xl--line-height: 1.1;
+  --text-4xl--letter-spacing: -0.02em;
+
+  /* Two widths: the page shell, and the reading measure. */
+  --container-shell: 64rem;
+  --container-measure: 68ch;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-page);
+    color: var(--color-body);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--color-ink);
+    font-weight: 600;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Dates and any aligned figures line up column-wise. */
+  time,
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Focus is an affordance, not decoration. It must always be visible. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 1px;
+  }
+
+  ::selection {
+    background-color: var(--color-accent-wash);
+    color: var(--color-ink);
+  }
+
+  hr {
+    border-color: var(--color-line);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   PROSE
+   Styles for rendered Markdown. Hand-written rather than a plugin: the rules
+   below are the whole surface area of what our content can produce.
+   --------------------------------------------------------------------------- */
+@layer components {
+  .prose {
+    max-width: var(--container-measure);
+    font-size: var(--text-base);
+    line-height: 1.65;
+  }
+
+  .prose > * + * {
+    margin-top: calc(var(--spacing) * 6);
+  }
+
+  .prose h2,
+  .prose h3,
+  .prose h4 {
+    margin-top: calc(var(--spacing) * 12);
+    margin-bottom: calc(var(--spacing) * -2);
+  }
+
+  .prose h2 {
+    font-size: var(--text-xl);
+    line-height: 1.35;
+  }
+
+  .prose h3 {
+    font-size: var(--text-lg);
+    line-height: 1.45;
+  }
+
+  .prose h4 {
+    font-size: var(--text-base);
+    line-height: 1.5;
+  }
+
+  .prose a {
+    color: var(--color-accent-strong);
+    text-decoration: underline;
+    text-decoration-color: var(--color-line);
+    text-underline-offset: 0.2em;
+    transition: text-decoration-color 150ms ease;
+  }
+
+  .prose a:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .prose strong {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+
+  .prose ul,
+  .prose ol {
+    padding-left: calc(var(--spacing) * 5);
+  }
+
+  .prose ul {
+    list-style: disc;
+  }
+
+  .prose ol {
+    list-style: decimal;
+  }
+
+  .prose li::marker {
+    color: var(--color-muted);
+  }
+
+  .prose li + li {
+    margin-top: calc(var(--spacing) * 2);
+  }
+
+  .prose blockquote {
+    border-left: 1px solid var(--color-line);
+    padding-left: calc(var(--spacing) * 5);
+    color: var(--color-muted);
+  }
+
+  .prose code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    color: var(--color-ink);
+  }
+
+  .prose :not(pre) > code {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 2px;
+    padding: 0.1em 0.3em;
+  }
+
+  .prose pre {
+    background-color: var(--color-surface) !important;
+    border: 1px solid var(--color-line);
+    padding: calc(var(--spacing) * 4);
+    overflow-x: auto;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+  }
+
+  .prose table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .prose th,
+  .prose td {
+    border-bottom: 1px solid var(--color-line);
+    padding: calc(var(--spacing) * 2) calc(var(--spacing) * 3);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .prose th {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+
+  .prose img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--color-line);
+  }
+
+  .prose hr {
+    border-top: 1px solid var(--color-line);
+    margin-block: calc(var(--spacing) * 12);
+  }
+}

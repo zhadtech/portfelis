@@ -1,0 +1,34 @@
+---
+import FormattedDate from './FormattedDate.astro';
+import TagList from './TagList.astro';
+import { href } from '../lib/paths';
+import type { Post } from '../lib/content';
+
+interface Props {
+  post: Post;
+  /** Tag chips are useful on the blog index and redundant on a tag page. */
+  showTags?: boolean;
+}
+
+const { post, showTags = true } = Astro.props;
+const { title, description, date, tags } = post.data;
+---
+
+<article class="group grid gap-x-8 gap-y-3 border-t border-line py-6 sm:grid-cols-[8rem_1fr]">
+  <FormattedDate date={date} class="text-sm text-muted sm:pt-1" />
+
+  <div>
+    <h2 class="text-lg">
+      <a
+        href={href(`/blog/${post.id}`)}
+        class="text-ink decoration-line underline-offset-4 transition-colors duration-150 group-hover:text-accent-strong hover:underline"
+      >
+        {title}
+      </a>
+    </h2>
+
+    <p class="mt-2 max-w-measure text-sm text-body">{description}</p>
+
+    {showTags && tags.length > 0 && <TagList tags={tags} class="mt-4" />}
+  </div>
+</article>

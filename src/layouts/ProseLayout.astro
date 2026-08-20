@@ -1,0 +1,33 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const hasFooter = Astro.slots.has('footer');
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="mx-auto w-full max-w-shell px-6 py-16 sm:px-8 sm:py-24">
+    <article>
+      <header class="max-w-measure border-b border-line pb-8">
+        <slot name="header" />
+      </header>
+
+      <div class="prose mt-10">
+        <slot />
+      </div>
+
+      {
+        hasFooter && (
+          <footer class="mt-16 max-w-measure border-t border-line pt-8">
+            <slot name="footer" />
+          </footer>
+        )
+      }
+    </article>
+  </div>
+</BaseLayout>

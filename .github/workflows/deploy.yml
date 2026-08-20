@@ -1,0 +1,74 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; never cancel one mid-flight.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Fail loudly rather than shipping placeholder content to the live site.
+      # A silent sample deploy is the worst outcome available here.
+      - name: Require the content PAT
+        env:
+          CONTENT_PAT: ${{ secrets.CONTENT_PAT }}
+        run: |
+          if [ -z "$CONTENT_PAT" ]; then
+            echo "::error::secrets.CONTENT_PAT is not set. The private content submodules"
+            echo "::error::cannot be checked out and the site would deploy with placeholders."
+            echo "::error::Create a PAT with 'repo' scope and add it as CONTENT_PAT."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          # The default GITHUB_TOKEN cannot read other private repositories.
+          # Requires HTTPS URLs in .gitmodules for the token to apply.
+          token: ${{ secrets.CONTENT_PAT }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+        env:
+          PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
+          PUBLIC_BASE_PATH: ${{ vars.PUBLIC_BASE_PATH }}
+          PUBLIC_SITE_NAME: ${{ vars.PUBLIC_SITE_NAME }}
+          PUBLIC_SITE_TAGLINE: ${{ vars.PUBLIC_SITE_TAGLINE }}
+          PUBLIC_AUTHOR_HANDLE: ${{ vars.PUBLIC_AUTHOR_HANDLE }}
+          PUBLIC_SOCIAL_GITHUB: ${{ vars.PUBLIC_SOCIAL_GITHUB }}
+          PUBLIC_SOCIAL_LINKEDIN: ${{ vars.PUBLIC_SOCIAL_LINKEDIN }}
+          PUBLIC_SOCIAL_X: ${{ vars.PUBLIC_SOCIAL_X }}
+          # Public by design, kept in secrets only to keep it out of the repo.
+          PUBLIC_CONTACT_FORM_KEY: ${{ secrets.PUBLIC_CONTACT_FORM_KEY }}
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

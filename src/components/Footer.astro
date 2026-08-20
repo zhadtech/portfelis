@@ -1,0 +1,48 @@
+---
+import { site, socials } from '../config/site';
+import { href } from '../lib/paths';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="mt-24 border-t border-line">
+  <div
+    class="mx-auto flex w-full max-w-shell flex-col gap-4 px-6 py-10 text-sm sm:flex-row sm:items-baseline sm:justify-between sm:px-8"
+  >
+    <p class="flex flex-wrap items-baseline gap-x-2 text-muted">
+      <span class="tabular">© {year}</span>
+      <span>{site.name}</span>
+      {
+        site.handle && (
+          <>
+            <span class="text-line" aria-hidden="true">
+              /
+            </span>
+            <span>{site.handle}</span>
+          </>
+        )
+      }
+    </p>
+
+    <ul class="flex flex-wrap gap-x-6 gap-y-2 text-muted">
+      {
+        socials.map((social) => (
+          <li>
+            <a
+              href={social.url}
+              rel="me noopener"
+              class="transition-colors duration-150 hover:text-accent-strong"
+            >
+              {social.label}
+            </a>
+          </li>
+        ))
+      }
+      <li>
+        <a href={href('/rss.xml')} class="transition-colors duration-150 hover:text-accent-strong">
+          RSS
+        </a>
+      </li>
+    </ul>
+  </div>
+</footer>

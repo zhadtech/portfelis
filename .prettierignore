@@ -1,0 +1,8 @@
+dist/
+node_modules/
+.astro/
+package-lock.json
+
+# Submodule mounts — owned by other repositories. Never reformat them.
+src/content/blog/
+src/content/projects/

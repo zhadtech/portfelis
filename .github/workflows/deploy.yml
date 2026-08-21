@@ -58,6 +58,9 @@ jobs:
           PUBLIC_SOCIAL_X: ${{ vars.PUBLIC_SOCIAL_X }}
           # Public by design, kept in secrets only to keep it out of the repo.
           PUBLIC_CONTACT_FORM_KEY: ${{ secrets.PUBLIC_CONTACT_FORM_KEY }}
+          # CONTENT_SOURCE is deliberately not passed through. It is the local off switch
+          # for previewing the placeholder state; a deploy must always use real content,
+          # and the PAT check above already fails the build when it cannot be fetched.
 
       - uses: actions/upload-pages-artifact@v3
         with:

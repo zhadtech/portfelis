@@ -1,8 +1,13 @@
 # src/content — content, real and placeholder
 
-`blog/` and `projects/` are **git submodule mounts** owned by private repositories. They
-are empty here and must stay that way. Everything below is the committed fallback that
-renders when they are.
+`blog/` and `projects/` are **git submodule mounts** owned by the private repositories
+zhadtech/portfelis-blog and zhadtech/portfelis-projects. Nothing in them is committed to
+this repository — only a pointer to a commit in theirs. They are empty until
+`npm run content:on` checks them out, and empty again after `npm run content:off`.
+Everything below is the committed fallback that renders when they are empty.
+
+Their contents are documented in their own READMEs, not here, and `scripts/check-docs.mjs`
+skips both directories for the same reason.
 
 | File                                                                                   | What it does                                                                                                                |
 | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
@@ -29,7 +34,11 @@ renders when they are.
 ## Don't
 
 - **Don't write anything into `blog/` or `projects/`.** They belong to other
-  repositories. Committing into a mount point breaks the submodule.
+  repositories. Committing into a mount point breaks the submodule. To publish, commit and
+  push in the content repository, then move this repository's pointer:
+  `git submodule update --remote && git add src/content/blog src/content/projects`.
+- Don't add a sample that mirrors a real entry. Samples exist to exercise rendering paths,
+  not to preview content — a stale copy of a real post is worse than an obvious placeholder.
 - Don't reformat those two directories either — they are in `.prettierignore`.
 - Don't name a sample file `README.md`. The content glob excludes that name, because the
   private repos have one at their root.

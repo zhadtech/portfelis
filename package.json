@@ -13,7 +13,10 @@
     "check": "astro check",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "docs:check": "node scripts/check-docs.mjs"
+    "docs:check": "node scripts/check-docs.mjs",
+    "content:on": "git submodule update --init --recursive && rm -f node_modules/.astro/data-store.json",
+    "content:off": "git submodule deinit -f src/content/blog src/content/projects && rm -f node_modules/.astro/data-store.json",
+    "content:status": "git submodule status"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",

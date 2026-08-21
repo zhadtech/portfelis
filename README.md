@@ -26,6 +26,7 @@ instead, and a notice says so in dev.
 | `npm run check`                           | `astro check` — types and templates.                             |
 | `npm run format` / `npm run format:check` | Prettier.                                                        |
 | `npm run docs:check`                      | Validates the agent documentation system.                        |
+| `npm run content:on` / `content:off`      | Mount or unmount the private content. See "Private content".     |
 
 Links work in `dev` but 404 on Pages if any of them bypass `href()` in
 `src/lib/paths.ts`. `preview` is the build that tells you the truth.
@@ -41,35 +42,64 @@ cp .env.example .env
 `.env` is gitignored. In CI the same values come from GitHub repository variables, with
 the contact form key from repository secrets. See `.github/workflows/deploy.yml`.
 
-## First-time setup
+## Private content
 
-This directory is not a git repository yet. To make it one and wire up private content:
+The real posts and project write-ups live in two private repositories, mounted here as
+git submodules:
+
+| Mount                  | Repository                    |
+| ---------------------- | ----------------------------- |
+| `src/content/blog`     | `zhadtech/portfelis-blog`     |
+| `src/content/projects` | `zhadtech/portfelis-projects` |
+
+A fresh `git clone` leaves both directories empty, and the site builds fine that way —
+the placeholders in `src/content/samples/` render instead. To fetch the real content:
 
 ```bash
-git init -b main
-git add . && git commit -m "Initial commit"
+npm run content:on
+```
+
+Each repository's own `README.md` documents the frontmatter schema for its collection.
+Write there, commit and push there, then record the new pointer here (see "Updating
+content" below). The URLs in `.gitmodules` are HTTPS, not SSH — CI applies
+`secrets.CONTENT_PAT` to HTTPS only.
+
+### Turning private content on and off
+
+| Command                  | What it does                                                                                                                              |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run content:on`     | Checks the submodules out. Instant and offline after the first time — `deinit` keeps the objects.                                         |
+| `npm run content:off`    | Empties both mounts. The samples take over, exactly as on a fresh clone.                                                                  |
+| `npm run content:status` | Shows both mounts. A leading `-` means not checked out; a leading `+` means the checkout is at a different commit than this repo records. |
+
+Both scripts also delete `node_modules/.astro/data-store.json`. Without that, Astro keeps
+serving the entries it cached before the switch and the change appears not to have taken.
+
+There is a second, softer switch that does not touch git at all. In `.env`:
+
+```
+CONTENT_SOURCE=samples
+```
+
+That forces the placeholders even with the mounts checked out — useful for checking what
+a fork or a fresh clone sees without unmounting your own work. Unset it to go back.
+It is read at build time only and never reaches the browser, and CI never sets it, so a
+deploy always uses real content.
+
+### Updating content
+
+Committing in a private repo does not move this one. This repo records a specific commit
+of each mount, so publishing new writing is two steps:
+
+```bash
+npm run content:on && git submodule update --remote
 ```
 
 ```bash
-git remote add origin https://github.com/OWNER/portfelis.git
+git add src/content/blog src/content/projects && git commit -m "Update content"
 ```
 
-Then mount the private content repositories. Delete the placeholder `.gitmodules` first —
-`git submodule add` writes its own:
-
-```bash
-rm .gitmodules
-```
-
-```bash
-git submodule add https://github.com/OWNER/PRIVATE-BLOG-REPO.git src/content/blog
-```
-
-```bash
-git submodule add https://github.com/OWNER/PRIVATE-PROJECTS-REPO.git src/content/projects
-```
-
-Use HTTPS URLs, not SSH: CI applies its token to HTTPS only.
+Push that, and the deploy picks the new content up.
 
 ## Deployment
 

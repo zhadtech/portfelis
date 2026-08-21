@@ -1,20 +1,13 @@
-# TEMPLATE — not yet wired to real repositories.
-#
-# The two paths below are where private content mounts. They are empty in this
-# repository on purpose: the public repo never stores real content, and the build
-# falls back to src/content/samples/ when they are empty.
-#
-# To wire them up, delete this file and run the commands in README.md
-# ("First-time setup") — `git submodule add` writes a correct .gitmodules for you.
+# Private content mounts. The build falls back to src/content/samples/ when these
+# directories are empty, which is the state of a fresh clone before
+# `npm run content:on` (or `git submodule update --init`).
 #
 # URLs must be HTTPS, not SSH: CI applies secrets.CONTENT_PAT to HTTPS only.
-
 [submodule "src/content/blog"]
 	path = src/content/blog
-	url = https://github.com/OWNER/PRIVATE-BLOG-REPO.git
+	url = https://github.com/zhadtech/portfelis-blog.git
 	branch = main
-
 [submodule "src/content/projects"]
 	path = src/content/projects
-	url = https://github.com/OWNER/PRIVATE-PROJECTS-REPO.git
+	url = https://github.com/zhadtech/portfelis-projects.git
 	branch = main

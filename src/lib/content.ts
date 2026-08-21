@@ -8,6 +8,9 @@ import { getCollection, type CollectionEntry, type CollectionKey } from 'astro:c
  * and in any PR build. When a mounted collection has no entries, the committed
  * samples stand in. Every rule about drafts and ordering lives here, once, so no
  * page has to remember them.
+ *
+ * `CONTENT_SOURCE=samples` overrides all of that and forces the placeholders, so the
+ * fresh-clone rendering can be checked without unmounting anything. See `.env.example`.
  */
 
 export type Post = CollectionEntry<'blog' | 'blogSample'>;
@@ -22,6 +25,15 @@ export interface Tag {
 }
 
 const cache = new Map<string, Promise<unknown[]>>();
+
+/**
+ * The off switch. `CONTENT_SOURCE=samples` (or `off`) ignores the mounts even when they
+ * are populated; unset — the normal case — means "mounted content if there is any".
+ * Build-time only: this is never read in the browser and never reaches the client bundle.
+ */
+const forceSamples = ['samples', 'off'].includes(
+  (import.meta.env.CONTENT_SOURCE ?? '').trim().toLowerCase(),
+);
 
 /**
  * `getCollection` returns `[]` for an empty directory, which is the normal
@@ -44,6 +56,7 @@ function safely<C extends CollectionKey>(collection: C) {
 
 /** Mounted content if there is any, otherwise the samples. */
 async function resolve<M extends CollectionKey, S extends CollectionKey>(mounted: M, sample: S) {
+  if (forceSamples) return await safely(sample);
   const real = await safely(mounted);
   return real.length > 0 ? real : await safely(sample);
 }
@@ -110,6 +123,7 @@ export async function getPostsByTag(slug: string): Promise<Post[]> {
  * The UI may only surface this in dev — never build a production page around it.
  */
 export async function usingSamples(): Promise<boolean> {
+  if (forceSamples) return true;
   const [posts, projects] = await Promise.all([safely('blog'), safely('projects')]);
   return posts.length === 0 || projects.length === 0;
 }

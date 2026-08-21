@@ -22,7 +22,9 @@ publish a plain `AGENTS.md` in that folder as a page, and `_` is its "not a rout
   production. This applies to assets in `public/` too.
 - **Never write content into `src/content/blog` or `src/content/projects`.** Those are
   git submodule mounts owned by private repositories. Sample content goes in
-  `src/content/samples/`.
+  `src/content/samples/`. Mount them with `npm run content:on`, unmount with
+  `npm run content:off`; both are safe to run at any time and neither touches this
+  repository's history.
 - **One hue.** `--hue-brand` in `src/styles/global.css` drives every color. Never
   introduce a literal color anywhere else.
 - **No new runtime JavaScript.** The only script that ships is the contact form's
@@ -63,6 +65,15 @@ npm run format:check # prettier
 npm run docs:check   # the docs system above
 npm run build        # must succeed with the submodule mounts empty
 ```
+
+The last one is the easy check to skip and the expensive one to get wrong: a fresh clone
+and every fork start with the mounts empty. Verify it for real rather than assuming —
+
+```
+npm run content:off && npm run build && npm run content:on
+```
+
+— or, without unmounting anything, `CONTENT_SOURCE=samples npm run build`.
 
 `npm run dev` is forgiving about the base path; `npm run build && npm run preview` is
 not. Verify routing with `preview`.

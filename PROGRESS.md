@@ -2,8 +2,10 @@
 
 ## Status
 
-Build complete. All seven phases done and the acceptance checklist passes. The repository
-is not yet under version control — see Open questions.
+Build complete and wired to real content. All eight phases done and the acceptance
+checklist passes. The two private content repositories exist, are mounted as submodules,
+and the build renders them; the samples still stand in when they are unmounted. What is
+left is GitHub-side configuration for the first deploy — see Next.
 
 ## Done
 
@@ -22,6 +24,10 @@ is not yet under version control — see Open questions.
 - [x] **Phase 6 — Deploy.** `.github/workflows/deploy.yml`, `.gitmodules` template,
       `README.md`.
 - [x] **Phase 7 — Verify.** Full checklist below.
+- [x] **Phase 8 — Private content mounts.** `zhadtech/portfelis-blog` and
+      `zhadtech/portfelis-projects` created private and seeded with a schema README and
+      one starter entry each; both added as submodules; `content:on` / `content:off` /
+      `content:status` scripts; `CONTENT_SOURCE` build switch.
 
 ### Acceptance checklist
 
@@ -48,17 +54,26 @@ is not yet under version control — see Open questions.
       rejection, network failure, and honeypot paths all behave.
 - [x] `INDEX.md` routes to every file that exists, and each row's named symbol is
       actually present in the file it points at.
+- [x] Mounts populated: the build emits `/blog/starter-post` and `/projects/starter-project`
+      and no sample slug appears anywhere in `dist/`.
+- [x] `npm run content:off` → build renders the samples; `npm run content:on` → build
+      renders the private content again. Round trip is offline and leaves the working
+      tree clean.
+- [x] `CONTENT_SOURCE=samples` forces the samples with the mounts still checked out, set
+      either in the environment or in `.env`. `CONTENT_SOURCE` appears nowhere in `dist/`.
 
 ## Next
 
-Nothing is outstanding in the build itself. To take it live:
+Nothing is outstanding in the build or the content wiring. To take it live:
 
-1. Run the `git init` and `git submodule add` commands in `README.md` → "First-time
-   setup". They were deliberately not run; see Open questions.
-2. In the GitHub repository: Pages → Source: GitHub Actions; add the `CONTENT_PAT`
-   secret; add the `PUBLIC_*` repository variables.
-3. Copy `.env.example` to `.env` and fill in local values.
-4. Replace `public/favicon.svg` — its fill is the one hardcoded color in the repo.
+1. In the GitHub repository: Pages → Source: GitHub Actions.
+2. Add the `CONTENT_PAT` secret — a PAT with `repo` scope that can read both private
+   content repositories. Without it the deploy fails by design.
+3. Add the `PUBLIC_*` repository variables from `.env.example`.
+4. Copy `.env.example` to `.env` and fill in local values.
+5. Replace the two starter entries with real writing. Until then they are the entire
+   contents of the blog index, the projects grid and the feed.
+6. Replace `public/favicon.svg` — its fill is the one hardcoded color in the repo.
 
 ## Decisions
 
@@ -115,13 +130,35 @@ Append-only. Date, decision, one-line rationale.
 - **2026-08-20** — `import { z } from 'astro/zod'`, not from `astro:content`, which is
   deprecated in Astro 7. That re-export is zod v4, so schemas use `z.url()`.
 
+- **2026-08-20** — Two private content repositories, not one. The two mounts are separate
+  glob bases with different schemas; one repository would have to be mounted twice and
+  each mount would then see the other collection's files.
+- **2026-08-20** — The private repos carry their own `README.md` documenting their
+  frontmatter schema. The content glob already excludes `README.md`, so the documentation
+  sits with the thing it documents and cannot be published by accident.
+- **2026-08-20** — Seeded each private repo with one non-draft starter entry. A repo with
+  no commits cannot be added as a submodule at all, and a draft-only mount counts as
+  populated — the real collection wins over the samples and production then renders an
+  empty index. One real entry keeps the first deploy honest.
+- **2026-08-20** — Two off switches, deliberately. `npm run content:off` (`git submodule
+deinit`) reproduces the fresh-clone state exactly and is the honest test;
+  `CONTENT_SOURCE=samples` forces the fallback without touching git, for when unmounting
+  your own working copy is too blunt. They compose; neither replaces the other.
+- **2026-08-20** — `content:on` / `content:off` also delete
+  `node_modules/.astro/data-store.json`. Without it Astro keeps serving the entries it
+  cached before the switch, which reads as "the fallback is broken". That cache clear is
+  the entire reason these are npm scripts and not bare git commands in the README.
+- **2026-08-20** — `CONTENT_SOURCE` is not `PUBLIC_`-prefixed and is not passed through in
+  `deploy.yml`. It decides what the build reads, which the browser has no business
+  knowing, and a deploy must always use real content. Verified it resolves in a static
+  build from both the process environment and `.env`, and that the string appears nowhere
+  in `dist/`.
+- **2026-08-20** — Its type lives in `src/env.d.ts`, not in `src/config/site.ts`. That
+  file is documented as holding identity values only; a build-behaviour flag is not one.
+
 ## Open questions
 
-- **Git repository not initialised.** The build prompt asks for `git init` and an initial
-  commit in Phase 0 (§10) but also states the repo must not be created and that the
-  `git init` / submodule commands belong in `README.md` for the user to run (§9). The
-  more specific instruction was followed: nothing was initialised, and the exact commands
-  are in `README.md` under "First-time setup". Say the word and they can be run.
+None outstanding.
 
 ## Known issues
 
@@ -143,5 +180,14 @@ Append-only. Date, decision, one-line rationale.
   a subdirectory of a mount would put a slash in the slug, which `[slug].astro` cannot
   represent. If the private repos ever nest content, both detail routes become
   `[...slug].astro`.
+- **`git submodule add` refuses when `.gitmodules` is missing from the working tree but
+  still present in HEAD**, with `fatal: please make sure that the .gitmodules file is in
+the working tree`. Deleting the placeholder file first — with `rm` or `git rm` — causes
+  exactly that state. Create an empty (or comment-only) `.gitmodules` before running
+  `git submodule add`; it appends to whatever is there.
+- **Submodules added from a linked git worktree** store their object database under
+  `.git/worktrees/<name>/modules/…`, not the shared `.git/modules/…`. The mounts work
+  normally in that worktree, but the main worktree re-clones on its first
+  `npm run content:on` after the change lands on `main`. Harmless, just not instant.
 - **`public/favicon.svg` holds the only hardcoded color** in the repository. A static SVG
   cannot read `--hue-brand`; change it by hand if you change the hue.

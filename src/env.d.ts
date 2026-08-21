@@ -10,6 +10,8 @@ interface ImportMetaEnv {
   readonly PUBLIC_SOCIAL_GITHUB?: string;
   readonly PUBLIC_SOCIAL_LINKEDIN?: string;
   readonly PUBLIC_SOCIAL_X?: string;
+  /** Build-time only, never shipped to the client. See src/lib/content.ts. */
+  readonly CONTENT_SOURCE?: string;
 }
 
 interface ImportMeta {

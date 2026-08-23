@@ -64,16 +64,107 @@ left is GitHub-side configuration for the first deploy — see Next.
 
 ## Next
 
-Nothing is outstanding in the build or the content wiring. To take it live:
+Nothing is outstanding in the build or the content wiring. What is left is one-time
+configuration in the GitHub web UI, before the first deploy.
 
-1. In the GitHub repository: Pages → Source: GitHub Actions.
-2. Add the `CONTENT_PAT` secret — a PAT with `repo` scope that can read both private
-   content repositories. Without it the deploy fails by design.
-3. Add the `PUBLIC_*` repository variables from `.env.example`.
-4. Copy `.env.example` to `.env` and fill in local values.
-5. Replace the two starter entries with real writing. Until then they are the entire
-   contents of the blog index, the projects grid and the feed.
-6. Replace `public/favicon.svg` — its fill is the one hardcoded color in the repo.
+**Three repositories are involved.** This one — `portfelis`, public — holds the code and
+the workflow. Two private ones hold the writing and are mounted as the submodules listed
+in `.gitmodules`. The deploy runs in `portfelis` and has to reach into the other two.
+That reach is the only thing `CONTENT_PAT` exists for.
+
+### 1. Create the token
+
+`CONTENT_PAT` is a **personal access token**: a credential that belongs to your GitHub
+account, not to any repository. It does not exist anywhere yet — nothing in this repo or
+in the content repos contains it, and nothing generated it. You create it once in your
+account settings, then paste it into this repository's settings in step 2. The name
+`CONTENT_PAT` is just the label this project stores it under; GitHub does not care what
+it is called, but `.github/workflows/deploy.yml` looks up that exact spelling.
+
+A token is needed at all because Actions' built-in `GITHUB_TOKEN` is scoped to the
+repository the workflow runs in. It can read `portfelis` and nothing else, so it cannot
+check out two private repositories owned by you but stored elsewhere.
+
+1. Open **https://github.com/settings/tokens** (your avatar → Settings → Developer
+   settings → Personal access tokens → Tokens (classic)).
+2. **Generate new token → Generate new token (classic).**
+3. **Note:** anything you will recognise later, e.g. `portfelis content`. It is a label
+   for you; nothing reads it.
+4. **Expiration:** your call. When it expires the deploy starts failing at the checkout
+   step — the fix is to generate a new token and repeat step 2.
+5. **Scopes:** tick **`repo`**, and nothing else. That is the whole grant.
+6. **Generate token**, then copy the value (`ghp_…`) immediately. GitHub displays it
+   exactly once. If you lose it, generate a new one; there is no way to read it back.
+
+If you prefer a fine-grained token, give it **Contents: Read-only** on **all three**
+repositories — including `portfelis` itself, because `deploy.yml` checks this repository
+out with the same token it uses for the submodules.
+
+### 2. Store the token in this repository
+
+Do this in **`portfelis`** — the public repo you are reading now. Not in the content
+repos, and not in your account settings.
+
+1. This repository → **Settings → Secrets and variables → Actions →** the **Secrets**
+   tab (not Variables).
+2. **New repository secret.**
+3. **Name:** `CONTENT_PAT`, exactly — see `.github/workflows/deploy.yml:26`.
+4. **Secret:** paste the `ghp_…` value from step 1.
+5. **Add secret.** From here it is write-only: you can replace it, never read it back.
+
+Optionally add `PUBLIC_CONTACT_FORM_KEY` on the same tab — the Web3Forms access key.
+It is public by design and only lives in Secrets to keep it out of the repo; leave it
+unset and the contact page renders social links instead of a form.
+
+### 3. Add the repository variables
+
+Same screen, the **Variables** tab. **New repository variable**, once per row:
+
+| Name                     | Value                                              |
+| ------------------------ | -------------------------------------------------- |
+| `PUBLIC_SITE_URL`        | `https://<your-user>.github.io` — no trailing path |
+| `PUBLIC_BASE_PATH`       | `/portfelis` — must match the repository name      |
+| `PUBLIC_SITE_NAME`       | Header, footer and page titles                     |
+| `PUBLIC_SITE_TAGLINE`    | Subtitle under the site name                       |
+| `PUBLIC_AUTHOR_HANDLE`   | Shown in the footer and the feed                   |
+| `PUBLIC_SOCIAL_GITHUB`   | Full URL, or omit the variable                     |
+| `PUBLIC_SOCIAL_LINKEDIN` | Full URL, or omit the variable                     |
+| `PUBLIC_SOCIAL_X`        | Full URL, or omit the variable                     |
+
+These are not secrets — they are baked into the published HTML. `.env.example` carries
+the same list with fuller comments. Every one is optional; unset values fall back to the
+placeholders in `src/config/site.ts`.
+
+### 4. Turn Pages on
+
+**Settings → Pages → Build and deployment → Source: GitHub Actions.** Not "Deploy from a
+branch" — the workflow uploads the artifact itself.
+
+### 5. Deploy and read the first run
+
+Push to `main`, or **Actions → Deploy → Run workflow**. If it fails, the step that failed
+says which of the above is missing:
+
+- **"Require the content PAT" fails** — the secret is absent or misspelled. Step 2.
+- **`actions/checkout` fails** with `could not read Username` or a 403 on a submodule —
+  the token cannot reach the content repos: wrong scope, expired, or a fine-grained token
+  missing one of the three repositories. Step 1.
+- **Build succeeds, the site 404s or loads unstyled** — `PUBLIC_BASE_PATH` does not match
+  the repository name. Step 3.
+
+The build deliberately fails rather than falling back to the samples when the PAT is
+missing; publishing placeholder content to a live site is the worst outcome available.
+
+### 6. Local setup and content
+
+1. `cp .env.example .env` and fill in the same values as step 3. `.env` is gitignored.
+2. `npm run content:on` to check the private mounts out.
+3. Replace the two starter entries with real writing. Until you do, they are the entire
+   contents of the blog index, the projects grid and the feed. Each private repo's own
+   `README.md` documents its frontmatter schema. Commit there, then
+   `git submodule update --remote` and commit the moved pointer here — a commit in a
+   content repo does not move this one on its own.
+4. Replace `public/favicon.svg`; its fill is the one hardcoded color in the repository.
 
 ## Decisions
 

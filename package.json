@@ -31,8 +31,5 @@
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "typescript": "^6.0.3"
-  },
-  "optionalDependencies": {
-    "@bruits/satteri-darwin-arm64": "0.10.3"
   }
 }

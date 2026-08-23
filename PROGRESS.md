@@ -199,7 +199,8 @@ Append-only. Date, decision, one-line rationale.
 - **2026-08-20** — Dependencies added: `@tailwindcss/vite`, `tailwindcss`,
   `@astrojs/rss` (runtime); `@astrojs/check`, `typescript`, `prettier`,
   `prettier-plugin-astro`, `prettier-plugin-tailwindcss`, `@types/node` (dev);
-  `@bruits/satteri-darwin-arm64` pinned to `0.10.3` (optional — see Known issues).
+  `@bruits/satteri-darwin-arm64` pinned to `0.10.3` (optional — pin since removed,
+  see 2026-08-23).
 - **2026-08-20** — `docs:check` coverage rule: a folder holding files must be covered
   by its own `AGENTS.md` _or_ by the nearest ancestor's, which lists the file with a
   relative path. This lets `src/pages/_AGENTS.md` document every route in one table
@@ -247,19 +248,29 @@ deinit`) reproduces the fresh-clone state exactly and is the honest test;
 - **2026-08-20** — Its type lives in `src/env.d.ts`, not in `src/config/site.ts`. That
   file is documented as holding identity values only; a build-behaviour flag is not one.
 
+- **2026-08-23** — `package-lock.json` was regenerated from scratch. The committed lockfile
+  had no top-level `@emnapi/core` / `@emnapi/runtime` entries, which `@img/sharp-wasm32`
+  and `@tailwindcss/oxide-wasm32-wasi` both require. Those resolve only on platforms that
+  reach the wasm32 optionals, so `npm install` on darwin-arm64 reports "up to date" and
+  never repairs the gap, while `npm ci` on Linux CI fails with `Missing: @emnapi/runtime`.
+  Deleting the lockfile and reinstalling is the only thing that rebuilds the full ideal
+  tree — `npm install --package-lock-only`, even with `--os=linux --cpu=x64`, short-circuits.
+  If a lockfile-out-of-sync error ever reappears in CI, regenerate rather than patch.
+- **2026-08-23** — The `@bruits/satteri-darwin-arm64` pin in `optionalDependencies` was
+  removed and the Known issue closed. Upstream published `0.10.5` for `darwin-arm64`
+  (skipping `0.10.4` entirely), and the regenerated lockfile moves `satteri` to `0.10.5`,
+  so the engine and its native binding match on their own. Keeping the `0.10.3` pin against
+  a `0.10.5` engine would have reintroduced the mismatch the pin existed to prevent.
+- **2026-08-23** — `actions/checkout` and `actions/setup-node` bumped `v4` → `v5`. GitHub
+  now force-runs the v4 majors on Node 24 and warns on every run; the v5 majors target it
+  natively. This was only a warning, never the cause of a failed build.
+
 ## Open questions
 
 None outstanding.
 
 ## Known issues
 
-- **`@bruits/satteri-darwin-arm64` is pinned to `0.10.3` in `optionalDependencies`.**
-  Astro 7's Markdown engine `satteri@0.10.4` declares an optional dependency on its own
-  native binding at `0.10.4`, but that binding was never published for `darwin-arm64` —
-  only up to `0.10.3`. Without the pin, `npm install` on Apple Silicon completes and every
-  build then fails with `Cannot find native binding`. The pin is os/cpu-gated, so `npm ci`
-  on Linux CI skips it and uses `satteri-linux-x64-gnu` from the lockfile. Remove the pin
-  once upstream publishes a matching `darwin-arm64` build.
 - **Two `The collection "…" does not exist or is empty` lines on every build** with the
   mounts empty. Expected, not a failure — it is Astro reporting the fresh-clone state.
   Queries are memoised so it stays at one line per mount.

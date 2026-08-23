@@ -264,6 +264,12 @@ deinit`) reproduces the fresh-clone state exactly and is the honest test;
 - **2026-08-23** — `actions/checkout` and `actions/setup-node` bumped `v4` → `v5`. GitHub
   now force-runs the v4 majors on Node 24 and warns on every run; the v5 majors target it
   natively. This was only a warning, never the cause of a failed build.
+- **2026-08-24** — The contact page lead greeting interpolates `site.name` in a template
+  literal rather than naming anyone in the source. Commit `0103346` wrote the name as a
+  plain literal inside a single-quoted string, which both broke the build (the apostrophe
+  in "I'm" closed the string early — `CompilerError: Expected ':' but found 'Identifier'`)
+  and put a real name in a committed file. Prose is not exempt from the identity rule: any
+  greeting that names the author reads it from `src/config/site.ts`.
 
 ## Open questions
 

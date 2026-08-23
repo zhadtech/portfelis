@@ -10,7 +10,7 @@ const hasForm = site.contactFormKey !== '';
 const lead = hasForm
   ? 'A short note about what you are working on is enough to start. Replies usually go out within a couple of days.'
   : socials.length > 0
-    ? 'Hi, I'm Zhad. The form is not set up for this build. You can reach me through the link below.'
+    ? `Hi, I'm ${site.name}. The form is not set up for this build. You can reach me through the link below.`
     : 'No contact channels are configured for this build yet.';
 ---
 

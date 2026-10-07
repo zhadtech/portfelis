@@ -60,7 +60,7 @@ npm run content:on
 ```
 
 Each repository's own `README.md` documents the frontmatter schema for its collection.
-Write there, commit and push there, then record the new pointer here (see "Updating
+Write there, commit and push there, and the site picks it up on its own (see "Updating
 content" below). The URLs in `.gitmodules` are HTTPS, not SSH — CI applies
 `secrets.CONTENT_PAT` to HTTPS only.
 
@@ -88,8 +88,52 @@ deploy always uses real content.
 
 ### Updating content
 
-Committing in a private repo does not move this one. This repo records a specific commit
-of each mount, so publishing new writing is two steps:
+This repo records a specific commit of each mount, and the deploy builds exactly what is
+recorded, so a commit in a private repo does not reach the site by itself. Each content
+repo closes that gap with a small workflow: every push to its `main` sends a
+`content-updated` dispatch here, and `.github/workflows/content-sync.yml` answers it by
+moving both pointers to the latest content, committing, and pushing. That push runs the
+deploy. Push to a content repo and the site updates a couple of minutes later.
+
+The sync commits to `main` here, so `git pull` before pushing your own work.
+
+**One-time setup, in each content repo** (`portfelis-blog` and `portfelis-projects`):
+
+1. **Settings → Secrets and variables → Actions → New repository secret:**
+   `SITE_DISPATCH_TOKEN` — or `gh secret set SITE_DISPATCH_TOKEN --repo <owner>/<repo>`,
+   which prompts for the value. GitHub never shows a stored secret again, so unless you
+   kept the `CONTENT_PAT` value, create a dedicated fine-grained token: **Only select
+   repositories** → `portfelis`, **Contents: Read and write**. One token serves both
+   content repos.
+2. Add `.github/workflows/notify-site.yml`:
+
+   ```yaml
+   name: Notify site
+
+   # Tells the site repo to move its submodule pointer to this push and redeploy.
+   on:
+     push:
+       branches: [main]
+       # Changes the site never renders. The README is excluded from the content glob.
+       paths-ignore: [README.md, '.github/**']
+     workflow_dispatch:
+
+   permissions: {}
+
+   jobs:
+     dispatch:
+       runs-on: ubuntu-latest
+       steps:
+         - name: Dispatch content-updated
+           env:
+             GH_TOKEN: ${{ secrets.SITE_DISPATCH_TOKEN }}
+             # Rename here if the site repo is not called portfelis.
+             SITE_REPO: ${{ github.repository_owner }}/portfelis
+           run: gh api "repos/$SITE_REPO/dispatches" -f event_type=content-updated
+   ```
+
+To sync by hand — a dispatch failed, or the senders are not set up yet — run **Actions →
+Sync content → Run workflow** here. Or locally:
 
 ```bash
 npm run content:on && git submodule update --remote
@@ -104,15 +148,17 @@ Push that, and the deploy picks the new content up.
 ## Deployment
 
 Push to `main`. The workflow checks out the submodules with `secrets.CONTENT_PAT`,
-builds, and publishes to GitHub Pages.
+builds, and publishes to GitHub Pages. A push to a content repo gets here through the
+content sync (see "Updating content").
 
 Before the first deploy:
 
 1. **Settings → Pages → Source: GitHub Actions.**
 2. **Settings → Secrets and variables → Actions → Secrets:** add `CONTENT_PAT`, a
-   personal access token with `repo` scope that can read the private content
-   repositories. The default `GITHUB_TOKEN` cannot read other private repos. Optionally
-   add `PUBLIC_CONTACT_FORM_KEY`.
+   personal access token with `repo` scope. It reads the private content repositories —
+   the default `GITHUB_TOKEN` cannot read other private repos — and the content sync
+   pushes the moved pointers to this one with it. Optionally add
+   `PUBLIC_CONTACT_FORM_KEY`.
 3. **…→ Variables:** add the `PUBLIC_*` values from `.env.example`. `PUBLIC_BASE_PATH`
    must match the repository name (`/portfelis`), or be `/` for a user or custom-domain
    site.

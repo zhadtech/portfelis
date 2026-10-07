@@ -48,6 +48,7 @@ open that file, then read that folder's `AGENTS.md`.
 | Change the RSS feed                                   | `src/pages/rss.xml.ts`                                                      |
 | Change the site URL or base path                      | `astro.config.mjs` + `.env.example`                                         |
 | Change deploy behaviour or submodule checkout         | `.github/workflows/deploy.yml`                                              |
+| Change how a content-repo push reaches the live site  | `.github/workflows/content-sync.yml`, and `README.md` → "Updating content"  |
 | Point the submodules at different private repos       | `.gitmodules`, then `README.md` → "Private content"                         |
 | Change what `npm run docs:check` enforces             | `scripts/check-docs.mjs`                                                    |
 | Add a favicon or static asset                         | `public/`                                                                   |
@@ -65,7 +66,7 @@ open that file, then read that folder's `AGENTS.md`.
 | `src/content/`       | Submodule mounts (`blog/`, `projects/`) plus `samples/`.              | Editing placeholder content. Never the mounts.                |
 | `scripts/`           | `scripts/check-docs.mjs` — validates this documentation system.       | Changing what the docs rules enforce.                         |
 | `public/`            | Files copied verbatim to the site root.                               | Adding a favicon or static asset.                             |
-| `.github/workflows/` | One workflow: build and deploy to Pages.                              | Changing CI, submodule checkout, or env passthrough.          |
+| `.github/workflows/` | Two workflows: build and deploy to Pages; sync the content pointers.  | Changing CI, submodule checkout, env passthrough, or sync.    |
 
 ## Invariants
 
@@ -78,7 +79,8 @@ Break one of these and the build, the deploy, or the privacy guarantee breaks.
    `.env.example` holds placeholders only.
 3. **Never commit into the submodule mounts.** `src/content/blog` and
    `src/content/projects` belong to the private repositories zhadtech/portfelis-blog and
-   zhadtech/portfelis-projects. Write there, push there, then move the pointer here.
+   zhadtech/portfelis-projects. Write there, push there;
+   `.github/workflows/content-sync.yml` moves the pointer here.
 4. **The build must succeed with the mounts empty.** That is the state of a fresh clone.
 5. **One hue.** Every color derives from `--hue-brand`. No literal colors elsewhere.
 6. **Drafts are dev-only.** `draft: true` never reaches a production build.

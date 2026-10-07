@@ -1,0 +1,63 @@
+name: Sync content
+
+# A push to a private content repo does not move the submodule pointers recorded here, and
+# deploy.yml builds exactly what is recorded. Each content repo therefore dispatches
+# `content-updated` on push (the sender is in README.md → "Updating content"). This job
+# moves both pointers to the tip of their `main` and pushes the result; that push is what
+# runs deploy.yml. Manual dispatch does the same for when a sender did not fire.
+on:
+  repository_dispatch:
+    types: [content-updated]
+  workflow_dispatch:
+
+# Every git operation below authenticates with CONTENT_PAT; GITHUB_TOKEN is unused.
+permissions:
+  contents: read
+
+# Its own group, not `pages`. A queued run is replaced by a newer one, which is harmless
+# here because every run fetches the latest tips — but in the `pages` group a queued sync
+# would replace a pending deploy, and the site would miss that deploy.
+concurrency:
+  group: content-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require the content PAT
+        env:
+          CONTENT_PAT: ${{ secrets.CONTENT_PAT }}
+        run: |
+          if [ -z "$CONTENT_PAT" ]; then
+            echo "::error::secrets.CONTENT_PAT is not set. The private content submodules"
+            echo "::error::cannot be fetched and the moved pointers cannot be pushed."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v5
+        with:
+          # The branch tip when the job starts, not the commit the event was queued
+          # against: a run that waited behind another must commit on top of its push.
+          ref: main
+          submodules: recursive
+          # Reads the private mounts and pushes the result. It must be a PAT: a push made
+          # with GITHUB_TOKEN does not trigger other workflows, so deploy.yml would not run.
+          token: ${{ secrets.CONTENT_PAT }}
+
+      - name: Move the pointers to the tip of each content repo
+        run: git submodule update --remote
+
+      - name: Commit and push if anything moved
+        run: |
+          git add src/content/blog src/content/projects
+          if git diff --cached --quiet; then
+            echo "Pointers already at the latest content. Nothing to deploy."
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          # A fixed message on purpose. This repo is public; a submodule log in the message
+          # would copy private commit messages into its history.
+          git commit -m 'chore: sync private content'
+          git push origin HEAD:main

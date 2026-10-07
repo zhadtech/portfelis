@@ -2,10 +2,11 @@
 
 ## Status
 
-Build complete and wired to real content. All eight phases done and the acceptance
-checklist passes. The two private content repositories exist, are mounted as submodules,
-and the build renders them; the samples still stand in when they are unmounted. What is
-left is GitHub-side configuration for the first deploy — see Next.
+Live. The site has deployed from `main` since 2026-08-23, rendering the two private
+content repositories; the samples still stand in when they are unmounted. A push to a
+content repo now reaches the site on its own through `.github/workflows/content-sync.yml`,
+but only once each content repo carries the sender workflow and its secret. Installing
+those is the one open item — see Next.
 
 ## Done
 
@@ -28,6 +29,10 @@ left is GitHub-side configuration for the first deploy — see Next.
       `zhadtech/portfelis-projects` created private and seeded with a schema README and
       one starter entry each; both added as submodules; `content:on` / `content:off` /
       `content:status` scripts; `CONTENT_SOURCE` build switch.
+- [x] **Phase 9 — Content sync.** `.github/workflows/content-sync.yml` moves both
+      submodule pointers on a `content-updated` dispatch and pushes, which runs the deploy.
+      The sender's source is in `README.md` → "Updating content". Not yet exercised end to
+      end: the senders are not installed in the content repos.
 
 ### Acceptance checklist
 
@@ -64,8 +69,39 @@ left is GitHub-side configuration for the first deploy — see Next.
 
 ## Next
 
-Nothing is outstanding in the build or the content wiring. What is left is one-time
-configuration in the GitHub web UI, before the first deploy.
+### Install the content senders
+
+`content-sync.yml` is in place here but nothing calls it yet. Pushing to a content repo
+still changes nothing on the site until both of these are done in **each** of
+`portfelis-blog` and `portfelis-projects`:
+
+1. Add the repository secret `SITE_DISPATCH_TOKEN`: a fine-grained token with Contents:
+   Read and write on `portfelis` only, or the `CONTENT_PAT` value if you kept it. A
+   stored secret cannot be read back.
+2. Commit `.github/workflows/notify-site.yml`, copied from `README.md` → "Updating
+   content".
+
+Then prove it once: push a content change, and expect a **Sync content** run here that
+commits `chore: sync private content`, followed by a **Deploy** run for that commit.
+
+- **The sender's run fails** with `Bad credentials` or `Resource not accessible` — the
+  secret is missing or cannot write to `portfelis`. Step 1.
+- **The sender succeeds but no Sync content run appears** — `content-sync.yml` is not on
+  `main` here yet (a repository dispatch only runs workflows from the default branch),
+  the event type in the sender and in `content-sync.yml` differ, or the site repo is not
+  named `portfelis`.
+- **Sync content fails at `git push` with a 403** — `CONTENT_PAT` is a fine-grained
+  token that is read-only on `portfelis`. Give it Contents: Read and write there.
+- **Sync content says "Nothing to deploy"** — the pointers were already current, e.g.
+  because a previous sync picked the commit up. Not a failure.
+
+Until the senders are in, **Actions → Sync content → Run workflow** does the same job by
+hand.
+
+### First-deploy configuration — done, kept for reference
+
+The steps below were completed before the first deploy on 2026-08-23. They stay here as
+the reference for replacing an expired token or setting up a fork.
 
 **Three repositories are involved.** This one — `portfelis`, public — holds the code and
 the workflow. Two private ones hold the writing and are mounted as the submodules listed
@@ -96,9 +132,10 @@ check out two private repositories owned by you but stored elsewhere.
 6. **Generate token**, then copy the value (`ghp_…`) immediately. GitHub displays it
    exactly once. If you lose it, generate a new one; there is no way to read it back.
 
-If you prefer a fine-grained token, give it **Contents: Read-only** on **all three**
-repositories — including `portfelis` itself, because `deploy.yml` checks this repository
-out with the same token it uses for the submodules.
+If you prefer a fine-grained token, give it **Contents: Read-only** on the two content
+repositories and **Contents: Read and write** on `portfelis` itself. `deploy.yml` checks
+this repository out with the same token it uses for the submodules, and
+`content-sync.yml` pushes the moved pointers to it.
 
 ### 2. Store the token in this repository
 
@@ -161,9 +198,8 @@ missing; publishing placeholder content to a live site is the worst outcome avai
 2. `npm run content:on` to check the private mounts out.
 3. Replace the two starter entries with real writing. Until you do, they are the entire
    contents of the blog index, the projects grid and the feed. Each private repo's own
-   `README.md` documents its frontmatter schema. Commit there, then
-   `git submodule update --remote` and commit the moved pointer here — a commit in a
-   content repo does not move this one on its own.
+   `README.md` documents its frontmatter schema. Commit and push there; the content sync
+   moves the pointer here and redeploys, once the senders above are installed.
 4. Replace `public/favicon.svg`; its fill is the one hardcoded color in the repository.
 
 ## Decisions
@@ -271,6 +307,28 @@ deinit`) reproduces the fresh-clone state exactly and is the honest test;
   and put a real name in a committed file. Prose is not exempt from the identity rule: any
   greeting that names the author reads it from `src/config/site.ts`.
 
+- **2026-10-07** — A push to a content repo reaches the site by a `content-updated`
+  repository dispatch to `content-sync.yml`, which commits the moved submodule pointers
+  and pushes; that push runs the deploy. Rejected: building with
+  `git submodule update --remote` inside `deploy.yml`. It needs no commits, but the
+  pointer recorded here would drift from what is live, and `npm run content:on` would stop
+  reproducing production.
+- **2026-10-07** — This supersedes "One CI workflow (build + deploy)" of 2026-08-20; there
+  are now two. The sync needs its own concurrency group, because in the shared `pages`
+  group a queued sync replaces a pending deploy and the site misses it. The ban on a
+  PR-check workflow stands.
+- **2026-10-07** — The sync pushes with `CONTENT_PAT`, not `GITHUB_TOKEN`. A push made
+  with `GITHUB_TOKEN` does not trigger other workflows, so the deploy would never run.
+  The cost: a fine-grained `CONTENT_PAT` now needs write on `portfelis`; a classic one
+  with `repo` scope already has it.
+- **2026-10-07** — The sync's commit message is fixed text. This repo is public, and the
+  obvious richer message (`git diff --submodule=log`) would copy private commit messages
+  into its history.
+- **2026-10-07** — The sender lives in each content repo, and its source is kept in
+  `README.md` rather than as a file here. Any workflow file in this repo's
+  `.github/workflows/` would run here, and the sender has nothing to do in this repo.
+  It targets `${{ github.repository_owner }}/portfelis`, so the copy holds no account name.
+
 ## Open questions
 
 None outstanding.
@@ -299,3 +357,7 @@ the working tree`. Deleting the placeholder file first — with `rm` or `git rm`
   `npm run content:on` after the change lands on `main`. Harmless, just not instant.
 - **`public/favicon.svg` holds the only hardcoded color** in the repository. A static SVG
   cannot read `--hue-brand`; change it by hand if you change the hue.
+- **The content sync commits to `main`.** After any content push, local `main` is behind;
+  `git pull` before pushing local work, or the push is rejected as non-fast-forward. The
+  sync itself can lose the same race if you push here in the seconds between its checkout
+  and its push. It fails loudly, and re-running it fixes it.

@@ -92,8 +92,8 @@ This repo records a specific commit of each mount, and the deploy builds exactly
 recorded, so a commit in a private repo does not reach the site by itself. Each content
 repo closes that gap with a small workflow: every push to its `main` sends a
 `content-updated` dispatch here, and `.github/workflows/content-sync.yml` answers it by
-moving both pointers to the latest content, committing, and pushing. That push runs the
-deploy. Push to a content repo and the site updates a couple of minutes later.
+moving both pointers to the latest content, committing, pushing, and starting the deploy.
+Push to a content repo and the site updates a couple of minutes later.
 
 The sync commits to `main` here, so `git pull` before pushing your own work.
 
@@ -101,10 +101,9 @@ The sync commits to `main` here, so `git pull` before pushing your own work.
 
 1. **Settings → Secrets and variables → Actions → New repository secret:**
    `SITE_DISPATCH_TOKEN` — or `gh secret set SITE_DISPATCH_TOKEN --repo <owner>/<repo>`,
-   which prompts for the value. GitHub never shows a stored secret again, so unless you
-   kept the `CONTENT_PAT` value, create a dedicated fine-grained token: **Only select
+   which prompts for the value. Use a dedicated fine-grained token: **Only select
    repositories** → `portfelis`, **Contents: Read and write**. One token serves both
-   content repos.
+   content repos. Not `CONTENT_PAT`, which is read-only on `portfelis` by design.
 2. Add `.github/workflows/notify-site.yml`:
 
    ```yaml
@@ -155,10 +154,9 @@ Before the first deploy:
 
 1. **Settings → Pages → Source: GitHub Actions.**
 2. **Settings → Secrets and variables → Actions → Secrets:** add `CONTENT_PAT`, a
-   personal access token with `repo` scope. It reads the private content repositories —
-   the default `GITHUB_TOKEN` cannot read other private repos — and the content sync
-   pushes the moved pointers to this one with it. Optionally add
-   `PUBLIC_CONTACT_FORM_KEY`.
+   personal access token that can read the private content repositories — classic with
+   `repo` scope, or fine-grained with Contents: Read-only. The default `GITHUB_TOKEN`
+   cannot read other private repos. Optionally add `PUBLIC_CONTACT_FORM_KEY`.
 3. **…→ Variables:** add the `PUBLIC_*` values from `.env.example`. `PUBLIC_BASE_PATH`
    must match the repository name (`/portfelis`), or be `/` for a user or custom-domain
    site.

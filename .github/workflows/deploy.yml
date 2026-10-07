@@ -3,6 +3,7 @@ name: Deploy
 on:
   push:
     branches: [main]
+  # Also how content-sync.yml starts a deploy, since its GITHUB_TOKEN push triggers none.
   workflow_dispatch:
 
 permissions:

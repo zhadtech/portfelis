@@ -4,9 +4,9 @@
 
 Live. The site has deployed from `main` since 2026-08-23, rendering the two private
 content repositories; the samples still stand in when they are unmounted. A push to a
-content repo now reaches the site on its own through `.github/workflows/content-sync.yml`,
-but only once each content repo carries the sender workflow and its secret. Installing
-those is the one open item — see Next.
+content repo reaches the site on its own: each content repo dispatches to
+`.github/workflows/content-sync.yml`, which moves the submodule pointers and starts the
+deploy. The one open item is a clean end-to-end run of that chain — see Next.
 
 ## Done
 
@@ -29,10 +29,11 @@ those is the one open item — see Next.
       `zhadtech/portfelis-projects` created private and seeded with a schema README and
       one starter entry each; both added as submodules; `content:on` / `content:off` /
       `content:status` scripts; `CONTENT_SOURCE` build switch.
-- [x] **Phase 9 — Content sync.** `.github/workflows/content-sync.yml` moves both
-      submodule pointers on a `content-updated` dispatch and pushes, which runs the deploy.
-      The sender's source is in `README.md` → "Updating content". Not yet exercised end to
-      end: the senders are not installed in the content repos.
+- [x] **Phase 9 — Content sync.** `.github/workflows/content-sync.yml` moves the
+      submodule pointers on a `content-updated` dispatch, pushes with `GITHUB_TOKEN`, and
+      starts the deploy. Each content repo carries the sender,
+      `.github/workflows/notify-site.yml` (source in `README.md` → "Updating content"),
+      and a `SITE_DISPATCH_TOKEN` secret.
 
 ### Acceptance checklist
 
@@ -69,34 +70,31 @@ those is the one open item — see Next.
 
 ## Next
 
-### Install the content senders
+### Prove the content sync once
 
-`content-sync.yml` is in place here but nothing calls it yet. Pushing to a content repo
-still changes nothing on the site until both of these are done in **each** of
-`portfelis-blog` and `portfelis-projects`:
+Both content repos carry `.github/workflows/notify-site.yml` and a `SITE_DISPATCH_TOKEN`
+secret, installed 2026-10-07. What is left is one clean end-to-end run: a sender run, a
+**Sync content** run here that commits `chore: sync private content`, and the **Deploy**
+run it starts.
 
-1. Add the repository secret `SITE_DISPATCH_TOKEN`: a fine-grained token with Contents:
-   Read and write on `portfelis` only, or the `CONTENT_PAT` value if you kept it. A
-   stored secret cannot be read back.
-2. Commit `.github/workflows/notify-site.yml`, copied from `README.md` → "Updating
-   content".
+When a run fails, the step that failed says where to look:
 
-Then prove it once: push a content change, and expect a **Sync content** run here that
-commits `chore: sync private content`, followed by a **Deploy** run for that commit.
-
-- **The sender's run fails** with `Bad credentials` or `Resource not accessible` — the
-  secret is missing or cannot write to `portfelis`. Step 1.
-- **The sender succeeds but no Sync content run appears** — `content-sync.yml` is not on
-  `main` here yet (a repository dispatch only runs workflows from the default branch),
-  the event type in the sender and in `content-sync.yml` differ, or the site repo is not
-  named `portfelis`.
-- **Sync content fails at `git push` with a 403** — `CONTENT_PAT` is a fine-grained
-  token that is read-only on `portfelis`. Give it Contents: Read and write there.
+- **The sender's run fails** with `Bad credentials` or `Resource not accessible` — its
+  `SITE_DISPATCH_TOKEN` is missing, expired, or cannot write to `portfelis` (a
+  fine-grained token needs Contents: Read and write there). A stored secret cannot be
+  read back; set a new value.
+- **The sender succeeds but no Sync content run appears** — the event type in the sender
+  and in `content-sync.yml` differ, `content-sync.yml` is not on `main` (a repository
+  dispatch only runs workflows from the default branch), or the site repo is not named
+  `portfelis`.
+- **Sync content fails at "Move each pointer"** — `CONTENT_PAT` cannot read a content
+  repo (expired, or a fine-grained token missing that repo), or a `.gitmodules` entry
+  has no `branch`.
+- **Sync content pushed but no Deploy followed** — see Known issues.
 - **Sync content says "Nothing to deploy"** — the pointers were already current, e.g.
   because a previous sync picked the commit up. Not a failure.
 
-Until the senders are in, **Actions → Sync content → Run workflow** does the same job by
-hand.
+**Actions → Sync content → Run workflow** does the whole job by hand at any time.
 
 ### First-deploy configuration — done, kept for reference
 
@@ -132,10 +130,10 @@ check out two private repositories owned by you but stored elsewhere.
 6. **Generate token**, then copy the value (`ghp_…`) immediately. GitHub displays it
    exactly once. If you lose it, generate a new one; there is no way to read it back.
 
-If you prefer a fine-grained token, give it **Contents: Read-only** on the two content
-repositories and **Contents: Read and write** on `portfelis` itself. `deploy.yml` checks
-this repository out with the same token it uses for the submodules, and
-`content-sync.yml` pushes the moved pointers to it.
+If you prefer a fine-grained token, give it **Contents: Read-only** on **all three**
+repositories — including `portfelis` itself, because `deploy.yml` checks this repository
+out with the same token it uses for the submodules. Read-only is deliberate; see the
+2026-10-07 decisions before widening it.
 
 ### 2. Store the token in this repository
 
@@ -328,6 +326,16 @@ deinit`) reproduces the fresh-clone state exactly and is the honest test;
   `README.md` rather than as a file here. Any workflow file in this repo's
   `.github/workflows/` would run here, and the sender has nothing to do in this repo.
   It targets `${{ github.repository_owner }}/portfelis`, so the copy holds no account name.
+- **2026-10-07** — Supersedes the entry above on pushing with `CONTENT_PAT`. The first live
+  sync failed at `git push` with a 403, because `CONTENT_PAT` is read-only on `portfelis`,
+  and it stays that way: `deploy.yml` leaves it in `.git/config` while `npm ci` runs
+  third-party install scripts, so a writable token would let any compromised dependency
+  push to this public repo. The sync now pushes with `GITHUB_TOKEN` (`contents: write`)
+  and starts the deploy with `gh workflow run` (`actions: write`). A push made with
+  `GITHUB_TOKEN` triggers no workflow, but a dispatch it sends does.
+- **2026-10-07** — The sync reads each content repo's tip through the API and writes the
+  gitlink with `git update-index`, instead of checking the submodules out. Commit ids are
+  all it needs, and the private content never enters that job.
 
 ## Open questions
 
@@ -361,3 +369,6 @@ the working tree`. Deleting the placeholder file first — with `rm` or `git rm`
   `git pull` before pushing local work, or the push is rejected as non-fast-forward. The
   sync itself can lose the same race if you push here in the seconds between its checkout
   and its push. It fails loudly, and re-running it fixes it.
+- **Nothing retries a deploy the sync failed to start.** If its push lands but
+  `gh workflow run` fails, the next sync finds the pointers current and stops. Run
+  **Actions → Deploy → Run workflow**.

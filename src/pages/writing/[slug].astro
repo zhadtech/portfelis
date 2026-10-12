@@ -1,0 +1,15 @@
+---
+import type { GetStaticPaths } from 'astro';
+import PostLayout from '../../layouts/PostLayout.astro';
+import { getResearch } from '../../lib/content';
+
+// See the note in src/pages/projects/[slug].astro about flat content files.
+export const getStaticPaths = (async () => {
+  const posts = await getResearch();
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}) satisfies GetStaticPaths;
+
+const { post } = Astro.props;
+---
+
+<PostLayout post={post} back={{ path: '/writing', label: 'All writing' }} />

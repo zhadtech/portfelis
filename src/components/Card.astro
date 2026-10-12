@@ -1,0 +1,30 @@
+---
+import Icon from './Icon.astro';
+import type { IconName } from './icons';
+
+interface Props {
+  /** Short and uppercase-friendly: "Links", "Topics". Also the section's accessible name. */
+  title: string;
+  icon: IconName;
+  class?: string;
+}
+
+const { title, icon, class: className } = Astro.props;
+const id = `card-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+---
+
+<section
+  aria-labelledby={id}
+  class:list={['overflow-hidden rounded-card border border-line bg-page shadow-card', className]}
+>
+  <h2
+    id={id}
+    class="scallop flex items-center gap-2 bg-tint-soft px-4 pt-3.5 pb-2.5 text-xs font-bold tracking-widest text-accent-deep uppercase"
+  >
+    <Icon name={icon} class="size-4" />
+    {title}
+  </h2>
+  <div class="px-4 pt-5 pb-4 text-sm">
+    <slot />
+  </div>
+</section>

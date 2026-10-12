@@ -1,0 +1,39 @@
+---
+import Icon from './Icon.astro';
+import type { IconName } from './icons';
+
+interface Props {
+  /** The section's `h2`, and its accessible name via `id`. */
+  title: string;
+  id: string;
+  icon: IconName;
+  /** Where "see all" goes; already passed through `href()`. */
+  more?: { href: string; label: string };
+}
+
+const { title, id, icon, more } = Astro.props;
+---
+
+<div class="mb-7 flex items-center justify-between gap-4 border-b-2 border-tint-soft pb-2.5">
+  <h2
+    id={id}
+    class="flex items-center gap-2 text-sm font-bold tracking-widest text-accent-deep uppercase"
+  >
+    <Icon name={icon} class="size-[1.3em] text-accent" />
+    {title}
+  </h2>
+  {
+    more && (
+      <a
+        href={more.href}
+        class="group inline-flex items-center gap-1 text-sm text-accent-strong transition-colors duration-150 hover:text-accent-deep"
+      >
+        {more.label}
+        <Icon
+          name="arrow-right"
+          class="transition-transform duration-150 group-hover:translate-x-0.5"
+        />
+      </a>
+    )
+  }
+</div>

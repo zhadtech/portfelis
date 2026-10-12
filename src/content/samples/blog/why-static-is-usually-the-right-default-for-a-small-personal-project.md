@@ -3,6 +3,7 @@ title: Why a static site is usually the right default for a small personal proje
 description: A short comparison of the failure modes you inherit with a server, and the ones you avoid without one.
 date: 2026-06-30
 tags: ['static-sites', 'performance', 'tooling', 'notes']
+kind: research
 draft: false
 ---
 

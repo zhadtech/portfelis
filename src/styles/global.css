@@ -1,39 +1,59 @@
 @import 'tailwindcss';
+/* The display face, for headings only. Self-hosted from the npm package, so the build
+   stays offline and the version is pinned by the lockfile. Body text stays on the
+   system stack. */
+@import '@fontsource-variable/outfit';
 
 /* ---------------------------------------------------------------------------
    THE KNOB
    One hue drives every color on the site. Change this number and nothing else;
    the whole palette moves with it, coherently, because every other color below
    varies only in lightness and chroma.
-   30 = warm amber. 150 = green. 212 = blue. 280 = violet.
+   30 = warm amber. 150 = green. 212 = teal-blue. 256 = denim. 280 = violet.
    --------------------------------------------------------------------------- */
 :root {
-  --hue-brand: 212;
+  --hue-brand: 256;
 }
 
 @theme {
-  /* Surfaces and text. Neutrals carry a trace of the brand hue (chroma 0.002–0.024)
+  /* Surfaces and text. Neutrals carry a trace of the brand hue (chroma 0.002–0.03)
      rather than being pure grey — that is what keeps the page from feeling assembled. */
   --color-page: oklch(0.995 0.002 var(--hue-brand));
-  --color-surface: oklch(0.975 0.005 var(--hue-brand));
-  --color-line: oklch(0.905 0.01 var(--hue-brand));
-  --color-muted: oklch(0.62 0.014 var(--hue-brand));
-  --color-body: oklch(0.44 0.018 var(--hue-brand));
-  --color-ink: oklch(0.22 0.024 var(--hue-brand));
+  --color-surface: oklch(0.972 0.008 var(--hue-brand));
+  --color-line: oklch(0.9 0.014 var(--hue-brand));
+  --color-muted: oklch(0.53 0.022 var(--hue-brand));
+  --color-body: oklch(0.36 0.022 var(--hue-brand));
+  --color-ink: oklch(0.24 0.03 var(--hue-brand));
 
-  /* The same hue, carrying real chroma. */
-  --color-accent: oklch(0.55 0.14 var(--hue-brand));
-  --color-accent-strong: oklch(0.45 0.15 var(--hue-brand));
+  /* The same hue, carrying real chroma. `accent-strong` is the header bar, titles and
+     links; `accent-deep` is text on the tints and the pressed state on the bar. */
+  --color-accent: oklch(0.55 0.11 var(--hue-brand));
+  --color-accent-strong: oklch(0.5 0.11 var(--hue-brand));
+  --color-accent-deep: oklch(0.4 0.08 var(--hue-brand));
   --color-accent-wash: oklch(0.96 0.02 var(--hue-brand));
 
-  /* System stack: no network request, first paint is the final paint.
-     Swap here — and only here — if a webfont is ever wanted. */
+  /* Mid tints: the profile card and rules (`tint`), pills and card heads (`tint-soft`). */
+  --color-tint: oklch(0.8 0.045 var(--hue-brand));
+  --color-tint-soft: oklch(0.87 0.035 var(--hue-brand));
+
+  /* Text that sits on an accent fill. */
+  --color-on-accent: oklch(0.995 0.002 var(--hue-brand));
+  --color-on-accent-muted: oklch(0.94 0.025 var(--hue-brand));
+
+  /* Depth, in the brand hue. Two shadows and two radii — the complete set. */
+  --shadow-card: 0 14px 34px -16px oklch(0.35 0.08 var(--hue-brand) / 0.32);
+  --shadow-pill: 0 4px 14px -4px oklch(0.45 0.1 var(--hue-brand) / 0.45);
+  --radius-card: 12px;
+  --radius-chip: 5px;
+
+  /* Body: system stack, no request. Headings: Outfit, imported above. */
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Outfit Variable', ui-sans-serif, system-ui, sans-serif;
   --font-mono:
     ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
 
-  /* One type scale, ratio 1.2, anchored at 1rem. No ad-hoc sizes in components.
+  /* One type scale, ratio 1.2, anchored at 1rem — which is 17px here; see `html` below.
      Line height tightens as size grows; large sizes tighten optically too. */
   --text-xs: 0.694rem;
   --text-xs--line-height: 1.5;
@@ -42,26 +62,35 @@
   --text-base: 1rem;
   --text-base--line-height: 1.65;
   --text-lg: 1.2rem;
-  --text-lg--line-height: 1.55;
+  --text-lg--line-height: 1.35;
   --text-xl: 1.44rem;
-  --text-xl--line-height: 1.35;
+  --text-xl--line-height: 1.25;
+  --text-xl--letter-spacing: -0.015em;
   --text-2xl: 1.728rem;
-  --text-2xl--line-height: 1.25;
-  --text-2xl--letter-spacing: -0.01em;
+  --text-2xl--line-height: 1.2;
+  --text-2xl--letter-spacing: -0.015em;
   --text-3xl: 2.074rem;
   --text-3xl--line-height: 1.15;
-  --text-3xl--letter-spacing: -0.015em;
+  --text-3xl--letter-spacing: -0.02em;
   --text-4xl: 2.488rem;
   --text-4xl--line-height: 1.1;
   --text-4xl--letter-spacing: -0.02em;
 
-  /* Two widths: the page shell, and the reading measure. */
-  --container-shell: 64rem;
+  /* Three widths: the page shell, the reading measure, and the sidebar column. */
+  --container-shell: 60rem;
   --container-measure: 68ch;
+  --container-sidebar: 16.5rem;
+
+  /* Where the sidebar moves beside the main column. Media queries measure rem against
+     the browser default, not the 17px root, so this is 896px at default settings. */
+  --breakpoint-split: 56rem;
 }
 
 @layer base {
   html {
+    /* 17px with default browser settings. A percentage, so a reader's own font-size
+       preference still scales everything — type, spacing and widths together. */
+    font-size: 106.25%;
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
   }
@@ -81,7 +110,8 @@
   h5,
   h6 {
     color: var(--color-ink);
-    font-weight: 600;
+    font-family: var(--font-display);
+    font-weight: 700;
     text-wrap: balance;
   }
 
@@ -95,15 +125,16 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Focus is an affordance, not decoration. It must always be visible. */
+  /* Focus is an affordance, not decoration. It must always be visible. On the blue
+     header bar the ring switches to `on-accent` — see Header.astro. */
   :focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
-    border-radius: 1px;
+    border-radius: 2px;
   }
 
   ::selection {
-    background-color: var(--color-accent-wash);
+    background-color: var(--color-tint-soft);
     color: var(--color-ink);
   }
 
@@ -126,40 +157,102 @@
   }
 }
 
-/* ---------------------------------------------------------------------------
-   PROSE
-   Styles for rendered Markdown. Hand-written rather than a plugin: the rules
-   below are the whole surface area of what our content can produce.
-   --------------------------------------------------------------------------- */
 @layer components {
+  /* -------------------------------------------------------------------------
+     SIDEBAR LAYOUT
+     Main column plus a sidebar. Below `split` everything stacks, with `lead` first —
+     on the home page that is the profile card, so a phone opens on the introduction.
+     Children opt in with `.lead`, `.main` and `.side`.
+     ------------------------------------------------------------------------- */
+  .sidebar-layout {
+    display: grid;
+    gap: calc(var(--spacing) * 10);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'lead' 'main' 'side';
+
+    @variant split {
+      grid-template-columns: minmax(0, 1fr) var(--container-sidebar);
+      grid-template-rows: auto 1fr;
+      grid-template-areas: 'main lead' 'main side';
+      column-gap: calc(var(--spacing) * 16);
+      row-gap: calc(var(--spacing) * 7);
+    }
+  }
+
+  .sidebar-layout > .lead {
+    grid-area: lead;
+  }
+
+  .sidebar-layout > .main {
+    grid-area: main;
+    min-width: 0;
+  }
+
+  .sidebar-layout > .side {
+    grid-area: side;
+    align-self: start;
+  }
+
+  /* -------------------------------------------------------------------------
+     SCALLOP
+     The wavy bottom edge on a card header: a 6px strip of the element's own
+     background, masked into half-circles. The mask reads alpha only, so the color
+     named in it is irrelevant — `ink` is just a token that is always opaque.
+     ------------------------------------------------------------------------- */
+  .scallop {
+    position: relative;
+  }
+
+  .scallop::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: inherit;
+    -webkit-mask: radial-gradient(circle at 50% 0, var(--color-ink) 70%, transparent 72%) 0 0 / 12px
+      6px repeat-x;
+    mask: radial-gradient(circle at 50% 0, var(--color-ink) 70%, transparent 72%) 0 0 / 12px 6px
+      repeat-x;
+  }
+
+  /* -------------------------------------------------------------------------
+     PROSE
+     Styles for rendered Markdown. Hand-written rather than a plugin: the rules
+     below are the whole surface area of what our content can produce.
+     ------------------------------------------------------------------------- */
   .prose {
     max-width: var(--container-measure);
     font-size: var(--text-base);
-    line-height: 1.65;
+    line-height: 1.7;
   }
 
   .prose > * + * {
-    margin-top: calc(var(--spacing) * 6);
+    margin-top: calc(var(--spacing) * 5);
   }
 
   .prose h2,
   .prose h3,
   .prose h4 {
-    margin-top: calc(var(--spacing) * 12);
-    margin-bottom: calc(var(--spacing) * -2);
+    margin-top: calc(var(--spacing) * 11);
+    margin-bottom: calc(var(--spacing) * -1);
   }
 
   .prose h2 {
+    padding-bottom: calc(var(--spacing) * 2);
+    border-bottom: 2px solid var(--color-tint-soft);
     font-size: var(--text-xl);
-    line-height: 1.35;
+    line-height: 1.3;
   }
 
   .prose h3 {
     font-size: var(--text-lg);
-    line-height: 1.45;
+    line-height: 1.4;
   }
 
   .prose h4 {
+    color: var(--color-accent-deep);
     font-size: var(--text-base);
     line-height: 1.5;
   }
@@ -167,7 +260,8 @@
   .prose a {
     color: var(--color-accent-strong);
     text-decoration: underline;
-    text-decoration-color: var(--color-line);
+    text-decoration-color: var(--color-tint);
+    text-decoration-thickness: 1px;
     text-underline-offset: 0.2em;
     transition: text-decoration-color 150ms ease;
   }
@@ -195,7 +289,7 @@
   }
 
   .prose li::marker {
-    color: var(--color-muted);
+    color: var(--color-accent);
   }
 
   .prose li + li {
@@ -203,28 +297,30 @@
   }
 
   .prose blockquote {
-    border-left: 1px solid var(--color-line);
+    border-left: 3px solid var(--color-tint-soft);
     padding-left: calc(var(--spacing) * 5);
-    color: var(--color-muted);
+    color: var(--color-accent-deep);
+    font-style: italic;
   }
 
   .prose code {
     font-family: var(--font-mono);
-    font-size: 0.9em;
+    font-size: 0.875em;
     color: var(--color-ink);
   }
 
   .prose :not(pre) > code {
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-line);
-    border-radius: 2px;
-    padding: 0.1em 0.3em;
+    background-color: var(--color-accent-wash);
+    border: 1px solid var(--color-tint-soft);
+    border-radius: var(--radius-chip);
+    padding: 0.1em 0.35em;
   }
 
   .prose pre {
     background-color: var(--color-surface) !important;
     border: 1px solid var(--color-line);
-    padding: calc(var(--spacing) * 4);
+    border-radius: var(--radius-card);
+    padding: calc(var(--spacing) * 4) calc(var(--spacing) * 5);
     overflow-x: auto;
     font-size: var(--text-sm);
     line-height: 1.6;
@@ -246,6 +342,7 @@
   }
 
   .prose th {
+    border-bottom: 2px solid var(--color-tint-soft);
     color: var(--color-ink);
     font-weight: 600;
   }
@@ -254,10 +351,13 @@
     max-width: 100%;
     height: auto;
     border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
   }
 
   .prose hr {
-    border-top: 1px solid var(--color-line);
+    border: 0;
+    border-top: 2px dotted var(--color-tint);
     margin-block: calc(var(--spacing) * 12);
   }
 }

@@ -1,0 +1,38 @@
+---
+import Icon from './Icon.astro';
+import type { IconName } from './icons';
+
+interface Props {
+  href: string;
+  /** `solid` is the main action in a group; `quiet` sits beside it. */
+  variant?: 'solid' | 'quiet';
+  /** Leading icon, for what the link is. */
+  icon?: IconName;
+  /** Trailing icon, for where it goes. */
+  iconEnd?: IconName;
+  /** Off-site: adds `rel="noopener"`. */
+  external?: boolean;
+  class?: string;
+}
+
+const { href, variant = 'solid', icon, iconEnd, external = false, class: className } = Astro.props;
+
+// The contact form's submit button repeats these classes, because it is a <button>.
+const BASE =
+  'inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs leading-none font-bold tracking-wider uppercase transition-colors duration-150';
+const VARIANTS = {
+  solid: 'bg-tint-soft text-accent-deep shadow-pill hover:bg-accent-strong hover:text-on-accent',
+  quiet:
+    'border border-line bg-surface text-accent-deep hover:border-accent-strong hover:bg-accent-strong hover:text-on-accent',
+};
+---
+
+<a
+  href={href}
+  rel={external ? 'noopener' : undefined}
+  class:list={[BASE, VARIANTS[variant], className]}
+>
+  {icon && <Icon name={icon} class="size-[1.2em] [stroke-width:2.25]" />}
+  <slot />
+  {iconEnd && <Icon name={iconEnd} class="size-[1.2em] [stroke-width:2.25]" />}
+</a>

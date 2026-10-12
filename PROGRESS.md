@@ -8,6 +8,11 @@ content repo reaches the site on its own: each content repo dispatches to
 `.github/workflows/content-sync.yml`, which moves the submodule pointers and starts the
 deploy. The one open item is a clean end-to-end run of that chain — see Next.
 
+On branch `feat/redesign` (2026-10-12): a visual redesign modelled on the feel of
+nicoverbruggen.be — blue header bar with icon tabs, Outfit headings, sidebar cards — and a
+new **Writing** section for curated long-form, split from **Blog** (the automated AI news)
+by a `kind` frontmatter field. Built and verified locally; not yet merged or deployed.
+
 ## Done
 
 - [x] **Phase 0 — Docs skeleton.** `INDEX.md`, `PROGRESS.md`, root `AGENTS.md`,
@@ -34,6 +39,13 @@ deploy. The one open item is a clean end-to-end run of that chain — see Next.
       starts the deploy. Each content repo carries the sender,
       `.github/workflows/notify-site.yml` (source in `README.md` → "Updating content"),
       and a `SITE_DISPATCH_TOKEN` secret.
+- [x] **Phase 10 — Redesign** (branch `feat/redesign`). Hue 212 → 256; `tint`,
+      `accent-deep` and `on-accent` tokens; two shadows, two radii; Outfit for headings
+      with a preload; 17px root; `.sidebar-layout` and `.scallop`. New components: `Icon` +
+      `icons.ts`, `PillLink`, `PageHeader`, `SectionHeading`, `Card`, `ProfileCard`,
+      `PostRow`; new `PostLayout`. Blog/Writing split: `kind` in `blogSchema`,
+      `getNews()` / `getResearch()` / `postPath()` / `readingMinutes()` / `groupByYear()`,
+      `/writing` and `/writing/[slug]`. Nav: Home · Work · Writing · Blog · Contact.
 
 ### Acceptance checklist
 
@@ -69,6 +81,20 @@ deploy. The one open item is a clean end-to-end run of that chain — see Next.
       either in the environment or in `.env`. `CONTENT_SOURCE` appears nowhere in `dist/`.
 
 ## Next
+
+### Ship the redesign
+
+The branch is verified locally (checklist under Decisions, 2026-10-12). Before or right
+after merging `feat/redesign`:
+
+1. **Set the bio.** Repository variable `PUBLIC_SITE_TAGLINE` (and `.env` locally) is now
+   the profile card text. The live value is still the old one-line quote.
+2. **Give recruiters a way to write.** Set `PUBLIC_SOCIAL_LINKEDIN`, and
+   `PUBLIC_CONTACT_FORM_KEY` (a free Web3Forms key; the email address stays hidden). With
+   only GitHub configured, the contact page has no direct channel.
+3. **Document `kind` in the blog repo's README**, next to its schema: `kind: research`
+   sends a post to Writing; omit it for Blog.
+4. **Replace the starter project.** It is the first thing under Featured work.
 
 ### Prove the content sync once
 
@@ -337,11 +363,66 @@ deinit`) reproduces the fresh-clone state exactly and is the honest test;
   gitlink with `git update-index`, instead of checking the submodules out. Commit ids are
   all it needs, and the private content never enters that job.
 
+- **2026-10-12** — Redesigned toward the feel of nicoverbruggen.be: a solid header bar in
+  the brand hue with icon-over-label tabs, blue display headings, a main column plus a
+  sidebar of cards with a scalloped header edge, pill buttons. Approved from a static
+  mockup before any code changed.
+- **2026-10-12** — Supersedes the styles rule "no shadows, no gradients, no decorative
+  radii". Allowed now: exactly two shadows and two radii, defined once in `@theme` in the
+  brand hue, plus `rounded-full` pills. The scallop's radial gradient is a mask, not a
+  visible gradient. Depth is most of what the redesign changes; banning it would ban the
+  brief.
+- **2026-10-12** — `--hue-brand` 212 → 256. Measured from the reference: its blues all
+  sit at OKLCH hue 255–257, so the single-hue system needed one number changed, not a
+  rework. `public/favicon.svg` re-filled by hand to `#3664a1` (`accent-strong`).
+- **2026-10-12** — Dependency added: `@fontsource-variable/outfit` (runtime, OFL-1.1).
+  Headings only; body text stays on the system stack. Outfit stands in for the
+  reference's Archia, which is a paid licence. The npm package over Astro's Fonts API,
+  which downloads at build time: the build stays offline and the font version is pinned
+  by the lockfile. About 32 KB for the Latin file, preloaded from `BaseLayout`.
+- **2026-10-12** — Root font size 17px (`106.25%`), matching the reference's body text.
+  A percentage, so the reader's own setting still scales it; the type scale, spacing and
+  widths all move together, and media queries are unaffected.
+- **2026-10-12** — Supersedes "two widths only": a third, `--container-sidebar`, plus a
+  custom `split` breakpoint at 56rem (896px). `md` leaves the main column too narrow for
+  a project card, and `lg` keeps 900–1023px single-column with a stretched profile card.
+- **2026-10-12** — Icons are copied into `src/components/icons.ts` (Lucide, ISC; the X
+  mark from Simple Icons, CC0) rather than installed: a dozen paths, zero JavaScript, no
+  dependency. The licence notice lives in that file.
+- **2026-10-12** — Blog and Writing are **one collection split by a `kind` field**
+  (`news` default, `research`), not a second private repo. Automated AI-news posts need no
+  new field, and a curated piece needs one line. Rejected: a third content repo (new
+  submodule, sync sender and token scope for a handful of documents) and a `research/`
+  subfolder (couples two collections to one mount's layout).
+- **2026-10-12** — Home leads with the strongest material for someone hiring: projects,
+  then Writing, then Blog as compact rows only. The Blog page says plainly that its posts
+  are collected and published automatically, and points to Writing for the hand-edited
+  work.
+- **2026-10-12** — The profile shows a monogram, not a photo, and no `PUBLIC_AVATAR_URL`
+  was added. The owner wants enough online to be hired and no more; contact stays the
+  Web3Forms form (address never shown) plus professional links.
+- **2026-10-12** — The bio is `site.tagline` (`PUBLIC_SITE_TAGLINE`), not a new variable:
+  one value to change, and it already feeds the meta and feed descriptions it should
+  match. The contact page's lead no longer says "the form is not set up for this build"
+  to visitors.
+- **2026-10-12** — Verified on the branch: `npm run check`, `format:check` and
+  `docs:check` clean; build passes with samples and with the real mounts; preview at
+  1280px and 375px for all nine page types, no horizontal overflow at 375px; skip link on
+  first Tab, focus ring visible on the blue bar; every text/background pair ≥ 4.5:1; no
+  `<script>` outside `/contact`; no text glued to an adjacent link in any built page.
+
 ## Open questions
 
 None outstanding.
 
 ## Known issues
+
+- **Writing is empty on the live site until a post carries `kind: research`.** The page
+  has an empty state and the home page simply omits the section, so it looks finished —
+  but it is the section that says the most to a recruiter.
+- **Astro drops the space between a line of text and an element that starts on the next
+  line** — `about it.` then a newline and `<a>` renders `about it.Get`. Write `{' '}` at
+  the end of the text line. This is what broke the old home page's contact sentence.
 
 - **Two `The collection "…" does not exist or is empty` lines on every build** with the
   mounts empty. Expected, not a failure — it is Astro reporting the fresh-clone state.

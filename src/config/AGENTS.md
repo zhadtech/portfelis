@@ -1,8 +1,8 @@
 # src/config — the settings file
 
-| File      | What it does                                                                                                                                                                                                                                                                                       |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `site.ts` | The single source of truth for identity. Exports `site` (name, tagline, handle, url, contact form key), `nav` (the header tabs, in order), and `socials` (only the links with a configured URL survive the filter). Every value is read from `import.meta.env` with a neutral placeholder default. |
+| File      | What it does                                                                                                                                                                                                                                                                                                                                          |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `site.ts` | The single source of truth for identity. Exports `site` (name, tagline, handle, url, contact form key), `nav` (the header tabs, in order, each with an icon — Home first), and `socials` (each with an icon; only the links with a configured URL survive the filter). Every value is read from `import.meta.env` with a neutral placeholder default. |
 
 ## Rules
 
@@ -11,6 +11,11 @@
 - `nav` paths are app-relative (`/blog`). They are passed through `href()` at render
   time — never store a base-prefixed path here.
 - A social link with an empty URL is dropped, not rendered greyed out. No dead links.
+- `tagline` is the bio on the home page's profile card, and the site's meta and feed
+  description. One or two plain sentences; it is read from `PUBLIC_SITE_TAGLINE`.
+- Icon names come from `src/components/icons.ts`; a typo is a type error.
+- `nav` starts with Home. `Header.astro` hides that tab on phones, and `404.astro` lists
+  every entry, so don't add a second Home link in either.
 
 ## Don't
 

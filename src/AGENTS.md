@@ -1,9 +1,9 @@
 # src — everything the site is built from
 
-| File                | What it does                                                                                                                                                                                                                                              |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `content.config.ts` | Defines four collections from two schemas: `blog` + `projects` load from the submodule mounts, `blogSample` + `projectSample` from the committed placeholders. Exports `blogSchema` and `projectSchema` so a frontmatter field is declared once for both. |
-| `env.d.ts`          | Types the `PUBLIC_*` variables on `import.meta.env`. Merges with Astro's own declarations, so `BASE_URL`, `PROD` and `DEV` stay available.                                                                                                                |
+| File                | What it does                                                                                                                                                                                                                                                                                                                                              |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `content.config.ts` | Defines four collections from two schemas: `blog` + `projects` load from the submodule mounts, `blogSample` + `projectSample` from the committed placeholders. Exports `blogSchema` and `projectSchema` so a frontmatter field is declared once for both. `blogSchema.kind` (`news` by default, or `research`) decides whether a post is Blog or Writing. |
+| `env.d.ts`          | Types the `PUBLIC_*` variables on `import.meta.env`. Merges with Astro's own declarations, so `BASE_URL`, `PROD` and `DEV` stay available.                                                                                                                                                                                                                |
 
 ## Rules
 

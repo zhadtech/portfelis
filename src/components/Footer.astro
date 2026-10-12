@@ -1,21 +1,27 @@
 ---
+import Icon from './Icon.astro';
 import { site, socials } from '../config/site';
 import { href } from '../lib/paths';
 
 const year = new Date().getFullYear();
+// A handle that only repeats the name adds nothing but noise.
+const showHandle = site.handle !== '' && site.handle !== site.name;
+
+const LINK =
+  'inline-flex items-center gap-1.5 text-accent-strong transition-colors duration-150 hover:text-accent-deep hover:underline hover:underline-offset-4';
 ---
 
 <footer class="mt-24 border-t border-line">
   <div
-    class="mx-auto flex w-full max-w-shell flex-col gap-4 px-6 py-10 text-sm sm:flex-row sm:items-baseline sm:justify-between sm:px-8"
+    class="mx-auto flex w-full max-w-shell flex-col gap-4 px-4 py-8 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-8"
   >
     <p class="flex flex-wrap items-baseline gap-x-2 text-muted">
       <span class="tabular">© {year}</span>
       <span>{site.name}</span>
       {
-        site.handle && (
+        showHandle && (
           <>
-            <span class="text-line" aria-hidden="true">
+            <span class="text-tint" aria-hidden="true">
               /
             </span>
             <span>{site.handle}</span>
@@ -24,22 +30,20 @@ const year = new Date().getFullYear();
       }
     </p>
 
-    <ul class="flex flex-wrap gap-x-6 gap-y-2 text-muted">
+    <ul class="flex flex-wrap gap-x-5 gap-y-2">
       {
         socials.map((social) => (
           <li>
-            <a
-              href={social.url}
-              rel="me noopener"
-              class="transition-colors duration-150 hover:text-accent-strong"
-            >
+            <a href={social.url} rel="me noopener" class={LINK}>
+              <Icon name={social.icon} />
               {social.label}
             </a>
           </li>
         ))
       }
       <li>
-        <a href={href('/rss.xml')} class="transition-colors duration-150 hover:text-accent-strong">
+        <a href={href('/rss.xml')} class={LINK}>
+          <Icon name="rss" />
           RSS
         </a>
       </li>

@@ -1,9 +1,11 @@
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
 import { site } from '../config/site';
-import { getPosts } from '../lib/content';
+import { getPosts, postPath } from '../lib/content';
 import { href } from '../lib/paths';
 
+// One feed for both sections: Blog and Writing. Each item links to wherever its `kind`
+// puts it.
 export async function GET(context: APIContext) {
   const posts = await getPosts();
 
@@ -17,7 +19,7 @@ export async function GET(context: APIContext) {
       title: post.data.title,
       description: post.data.description,
       pubDate: post.data.date,
-      link: href(`/blog/${post.id}`),
+      link: href(postPath(post)),
       categories: [...post.data.tags],
     })),
   });

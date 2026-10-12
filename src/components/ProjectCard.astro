@@ -1,4 +1,6 @@
 ---
+import Icon from './Icon.astro';
+import PillLink from './PillLink.astro';
 import FormattedDate from './FormattedDate.astro';
 import { href } from '../lib/paths';
 import type { Project } from '../lib/content';
@@ -10,58 +12,81 @@ interface Props {
 }
 
 const { project, headingLevel = 'h2' } = Astro.props;
-const { title, description, date, tech, repo, demo } = project.data;
+const { title, description, date, tech, repo, demo, featured } = project.data;
 const Heading = headingLevel;
-
-const links = [
-  repo ? { label: 'Repository', url: repo } : null,
-  demo ? { label: 'Demo', url: demo } : null,
-].filter((link) => link !== null);
+const initial = title.trim().charAt(0).toUpperCase();
 ---
 
-<article class="group border-t border-line pt-6">
-  <div class="flex items-baseline justify-between gap-4">
-    <Heading class="text-lg">
-      <a
-        href={href(`/projects/${project.id}`)}
-        class="text-ink decoration-line underline-offset-4 transition-colors duration-150 group-hover:text-accent-strong hover:underline"
-      >
-        {title}
-      </a>
-    </Heading>
-    <FormattedDate date={date} class="shrink-0 text-sm text-muted" />
+<article class="group grid grid-cols-[3.25rem_minmax(0,1fr)] gap-x-4">
+  {/* A letter tile in place of an app icon; alternates shade down a list. */}
+  <div
+    aria-hidden="true"
+    class="grid size-13 place-items-center rounded-card bg-accent font-display text-2xl font-extrabold text-on-accent shadow-card group-even:bg-accent-deep"
+  >
+    {initial}
   </div>
 
-  <p class="mt-3 max-w-[46ch] text-sm text-body">{description}</p>
+  <div>
+    <Heading class="border-b border-tint pb-2 text-lg text-accent-strong">
+      <a
+        href={href(`/projects/${project.id}`)}
+        class="transition-colors duration-150 hover:text-accent-deep">{title}</a
+      >
+      {
+        featured && (
+          <Icon
+            name="star"
+            label="Featured"
+            class="ml-1 inline size-[0.8em] align-[-0.05em] text-accent"
+          />
+        )
+      }
+    </Heading>
 
-  {
-    tech.length > 0 && (
-      <p class="mt-4 text-sm text-muted">
-        {tech.map((item, index) => (
+    <div class="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-sm">
+      <span class="inline-flex items-center gap-1.5 text-body">
+        <Icon name="calendar" class="text-accent" />
+        <FormattedDate date={date} format="short" />
+      </span>
+      {
+        tech.length > 0 && (
           <>
-            {index > 0 && <span class="mx-1.5 text-line">·</span>}
-            {item}
+            <span class="text-tint" aria-hidden="true">
+              /
+            </span>
+            <span class="sr-only">Built with</span>
+            <ul class="flex flex-wrap gap-1.5">
+              {tech.map((item) => (
+                <li class="rounded-[4px] bg-accent px-1.5 py-1 text-xs leading-none font-semibold text-on-accent">
+                  {item}
+                </li>
+              ))}
+            </ul>
           </>
-        ))}
-      </p>
-    )
-  }
+        )
+      }
+    </div>
+  </div>
 
-  {
-    links.length > 0 && (
-      <ul class="mt-4 flex gap-5 text-sm">
-        {links.map((link) => (
-          <li>
-            <a
-              href={link.url}
-              rel="noopener"
-              class="text-accent-strong decoration-line underline-offset-4 transition-colors duration-150 hover:underline"
-            >
-              {link.label}
-            </a>
-          </li>
-        ))}
-      </ul>
-    )
-  }
+  <p class="col-span-full mt-4 border-l-3 border-tint-soft pl-4 sm:col-start-2">{description}</p>
+
+  <div class="col-span-full mt-4 flex flex-wrap gap-2.5 sm:col-start-2">
+    <PillLink href={href(`/projects/${project.id}`)} iconEnd="chevrons-right">
+      Details<span class="sr-only">: {title}</span>
+    </PillLink>
+    {
+      repo && (
+        <PillLink href={repo} external variant="quiet" icon="code">
+          Repository
+        </PillLink>
+      )
+    }
+    {
+      demo && (
+        <PillLink href={demo} external variant="quiet" icon="external-link">
+          Live demo
+        </PillLink>
+      )
+    }
+  </div>
 </article>

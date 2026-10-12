@@ -1,9 +1,9 @@
 # src/lib — the two helpers everything else depends on
 
-| File         | What it does                                                                                                                                                                                                                                                                                                                                                                                                            |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `paths.ts`   | `href(path)` joins `import.meta.env.BASE_URL` with an app-relative path and normalises slashes — the only correct way to write an internal URL. `isActive(pathname, target)` decides whether a nav tab is current: home matches exactly, everything else also matches its descendants, so a post keeps "Writing" lit.                                                                                                   |
-| `content.ts` | The mount-or-sample resolver. `getPosts()` / `getProjects()` return mounted content, or the samples when the mount is empty, with drafts stripped in production and newest first. `forceSamples` is the `CONTENT_SOURCE=samples` override. Also `getProjectsByPriority()` (featured first), `getAllTags()` (label, slug, count), `getPostsByTag(slug)`, `tagSlug(label)`, and `usingSamples()` for the dev-only notice. |
+| File         | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `paths.ts`   | `href(path)` joins `import.meta.env.BASE_URL` with an app-relative path and normalises slashes — the only correct way to write an internal URL. `isActive(pathname, target)` decides whether a nav tab is current: home matches exactly, everything else also matches its descendants, so a post keeps "Writing" lit.                                                                                                                                                                                                                                                                                    |
+| `content.ts` | The mount-or-sample resolver. `getPosts()` / `getProjects()` return mounted content, or the samples when the mount is empty, with drafts stripped in production and newest first. `forceSamples` is the `CONTENT_SOURCE=samples` override. Also `getProjectsByPriority()` (featured first), `getNews()` / `getResearch()` (the Blog and Writing split, by `kind`), `postPath(post)` (a post's one URL), `readingMinutes(post)`, `groupByYear(posts)`, `getAllTags()` (label, slug, count — across both sections), `getPostsByTag(slug)`, `tagSlug(label)`, and `usingSamples()` for the dev-only notice. |
 
 ## Rules
 
@@ -11,6 +11,11 @@
   is filtering or sorting entries itself, the logic belongs here instead.
 - `href()` takes a path with a leading slash and returns one with the base applied.
   `href('/')` returns the base itself.
+- **Blog and Writing are one collection split by `kind`.** `getNews()` is everything
+  without `kind: research` — the default, so automated posts need no extra field — and
+  `getResearch()` is the rest. `postPath()` is the only place that maps a post to its URL.
+- Reading time counts whitespace-separated words in the raw Markdown at 200 a minute, so
+  code blocks and link URLs count too. Good enough for a label; don't build on it.
 - Tags are matched by slug, not by label, so `Static Sites` and `static-sites` reach the
   same page. The first spelling encountered is the one displayed.
 - The fallback has exactly two inputs: whether the mounted collection has entries, and

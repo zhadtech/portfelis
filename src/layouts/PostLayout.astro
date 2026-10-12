@@ -1,0 +1,56 @@
+---
+import { render } from 'astro:content';
+import ProseLayout from './ProseLayout.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import Icon from '../components/Icon.astro';
+import PillLink from '../components/PillLink.astro';
+import TagList from '../components/TagList.astro';
+import { href } from '../lib/paths';
+import { readingMinutes, type Post } from '../lib/content';
+
+interface Props {
+  post: Post;
+  /** The section index this post belongs to, for the link at the foot. App-relative. */
+  back: { path: string; label: string };
+}
+
+const { post, back } = Astro.props;
+const { title, description, date, tags, draft } = post.data;
+const { Content } = await render(post);
+---
+
+<ProseLayout title={title} description={description}>
+  <Fragment slot="header">
+    {
+      draft && (
+        <p class="mb-4 text-sm font-semibold text-accent-strong">
+          Draft — not included in a production build.
+        </p>
+      )
+    }
+
+    <h1 class="text-3xl text-accent-strong">{title}</h1>
+    <p class="mt-4 text-body">{description}</p>
+
+    <p
+      class="mt-5 flex flex-wrap justify-center gap-x-5 gap-y-1 text-xs font-semibold tracking-wider text-muted uppercase"
+    >
+      <span class="inline-flex items-center gap-1.5">
+        <Icon name="calendar" class="size-[1.25em] text-accent" />
+        <FormattedDate date={date} format="short" />
+      </span>
+      <span class="inline-flex items-center gap-1.5">
+        <Icon name="clock" class="size-[1.25em] text-accent" />
+        {readingMinutes(post)} min read
+      </span>
+    </p>
+
+    {tags.length > 0 && <TagList tags={tags} class="mt-5 justify-center" />}
+  </Fragment>
+
+  <Content />
+
+  <Fragment slot="footer">
+    <PillLink href={href(back.path)} variant="quiet" icon="arrow-left">{back.label}</PillLink>
+  </Fragment>
+</ProseLayout>

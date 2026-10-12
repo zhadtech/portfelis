@@ -1,0 +1,36 @@
+---
+import { ICONS, type IconName } from './icons';
+
+interface Props {
+  name: IconName;
+  /**
+   * Sizing and color. Without a size class the icon is 1em square, matching the text it
+   * sits in. That default lives in the width/height attributes, not in a class, so any
+   * size utility passed here overrides it — two competing size classes would be decided
+   * by stylesheet order instead.
+   */
+  class?: string;
+  /** Give the icon meaning of its own. Omit when adjacent text already says it. */
+  label?: string;
+}
+
+const { name, class: className, label } = Astro.props;
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  width="1em"
+  height="1em"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  focusable="false"
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+  class:list={['shrink-0', className]}
+  set:html={ICONS[name]}
+/>

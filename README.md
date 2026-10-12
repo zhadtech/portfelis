@@ -1,6 +1,6 @@
 # portfelis
 
-A static portfolio site — home, work, writing, contact. Built with Astro, deployed to
+A static portfolio site — home, work, writing, blog, contact. Built with Astro, deployed to
 GitHub Pages as a project site, with the real content kept in private repositories and
 mounted as git submodules.
 
@@ -60,6 +60,9 @@ npm run content:on
 ```
 
 Each repository's own `README.md` documents the frontmatter schema for its collection.
+Blog posts take one optional field beyond it: `kind: research` lists a post under
+Writing (curated long-form) instead of Blog, and moves its URL to `/writing/<slug>`.
+Without it a post is `news` and lists under Blog, so automated posts need nothing extra.
 Write there, commit and push there, and the site picks it up on its own (see "Updating
 content" below). The URLs in `.gitmodules` are HTTPS, not SSH — CI applies
 `secrets.CONTENT_PAT` to HTTPS only.

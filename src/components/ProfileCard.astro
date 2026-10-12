@@ -1,0 +1,35 @@
+---
+import PillLink from './PillLink.astro';
+import { site } from '../config/site';
+import { href } from '../lib/paths';
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+
+// A monogram, not a photo: nothing about the owner's face is published or committed.
+const initial = site.name.trim().charAt(0).toUpperCase();
+---
+
+<section
+  aria-labelledby="profile-name"
+  class:list={[
+    'relative mt-12 rounded-card bg-tint px-5 pt-16 pb-5 text-center text-ink shadow-card',
+    className,
+  ]}
+>
+  <div
+    aria-hidden="true"
+    class="absolute -top-12 left-1/2 grid size-24 -translate-x-1/2 place-items-center rounded-full border-4 border-page bg-accent-strong font-display text-4xl font-extrabold text-on-accent shadow-card"
+  >
+    {initial}
+  </div>
+
+  {/* The home page's h1 — this card only appears there. */}
+  <h1 id="profile-name" class="text-xl text-ink">Hi, I'm {site.name}.</h1>
+  <p class="mt-2 text-sm">{site.tagline}</p>
+
+  <PillLink href={href('/contact')} iconEnd="chevrons-right" class="mt-5">Get in touch</PillLink>
+</section>

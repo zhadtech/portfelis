@@ -1,38 +1,53 @@
 ---
+import Icon from './Icon.astro';
 import { nav, site } from '../config/site';
 import { href, isActive } from '../lib/paths';
 
 const { pathname } = Astro.url;
+
+// The ring color for everything on the bar: the default `accent` ring would vanish
+// against `accent-strong`.
+const RING = 'focus-visible:outline-on-accent';
 ---
 
-<header class="border-b border-line">
+<header class="bg-accent-strong text-on-accent">
   <div
-    class="mx-auto flex w-full max-w-shell items-baseline justify-between gap-6 px-6 py-6 sm:px-8"
+    class="mx-auto flex min-h-19 w-full max-w-shell items-center justify-between gap-3 px-4 sm:px-8"
   >
-    <a
-      href={href('/')}
-      class="text-base font-semibold tracking-tight text-ink transition-colors duration-150 hover:text-accent-strong"
-    >
-      {site.name}
+    <a href={href('/')} class:list={['group flex items-center gap-3 rounded-full', RING]}>
+      <span
+        class="grid size-12 place-items-center rounded-full bg-on-accent text-accent-strong shadow-pill transition-transform duration-150 group-hover:-rotate-6"
+        aria-hidden="true"
+      >
+        {/* The favicon's three bars, drawn in currentColor rather than its literal fill. */}
+        <svg viewBox="0 0 32 32" fill="currentColor" class="size-7 translate-x-px">
+          <rect x="8" y="9" width="16" height="2.5" rx="1.25"></rect>
+          <rect x="8" y="14.75" width="12" height="2.5" rx="1.25"></rect>
+          <rect x="8" y="20.5" width="7" height="2.5" rx="1.25"></rect>
+        </svg>
+      </span>
+      <span class="sr-only font-display text-lg font-bold sm:not-sr-only">{site.name}</span>
     </a>
 
     <nav aria-label="Primary">
-      <ul class="flex items-baseline gap-5 text-sm sm:gap-7">
+      <ul class="flex gap-0.5">
         {
           nav.map((item) => {
             const active = isActive(pathname, item.path);
             return (
-              <li>
+              <li class:list={[item.path === '/' && 'max-sm:hidden']}>
                 <a
                   href={href(item.path)}
                   aria-current={active ? 'page' : undefined}
                   class:list={[
-                    'underline-offset-[7px] transition-colors duration-150',
+                    'flex min-w-14 flex-col items-center gap-1.5 rounded-[10px] px-2 pt-2.5 pb-2 text-xs font-bold tracking-wider uppercase transition-colors duration-150',
+                    RING,
                     active
-                      ? 'text-ink underline decoration-accent decoration-1'
-                      : 'text-muted hover:text-ink',
+                      ? 'bg-accent-deep text-on-accent'
+                      : 'text-on-accent-muted hover:bg-accent hover:text-on-accent',
                   ]}
                 >
+                  <Icon name={item.icon} class="size-6 [stroke-width:1.75]" />
                   {item.label}
                 </a>
               </li>

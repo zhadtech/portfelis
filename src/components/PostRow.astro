@@ -1,0 +1,48 @@
+---
+import FormattedDate from './FormattedDate.astro';
+import { href } from '../lib/paths';
+import { postPath, type Post } from '../lib/content';
+
+interface Props {
+  post: Post;
+  /** `day` under a year heading, `short` when the list spans years. */
+  dateFormat?: 'day' | 'short';
+  /** Say which section a post is from, where a list mixes Blog and Writing. */
+  showKind?: boolean;
+}
+
+const { post, dateFormat = 'short', showKind = false } = Astro.props;
+const { title, description, date, kind } = post.data;
+---
+
+{/* One line of an archive. Renders an <li>: the page supplies the <ul>. */}
+<li
+  class:list={[
+    'grid gap-x-4 border-b border-dotted border-tint py-4 first:pt-0 last:border-b-0',
+    dateFormat === 'day'
+      ? 'grid-cols-[3.75rem_minmax(0,1fr)]'
+      : 'grid-cols-[6.25rem_minmax(0,1fr)]',
+  ]}
+>
+  <FormattedDate
+    date={date}
+    format={dateFormat}
+    class="pt-1 text-xs font-semibold tracking-wider text-muted uppercase"
+  />
+  <div>
+    <a
+      href={href(postPath(post))}
+      class="font-display text-lg font-semibold text-ink transition-colors duration-150 hover:text-accent-strong"
+    >
+      {title}
+    </a>
+    {
+      showKind && kind === 'research' && (
+        <span class="ml-1.5 rounded-[4px] bg-accent px-1.5 py-1 align-[0.15em] text-xs leading-none font-semibold text-on-accent">
+          Writing
+        </span>
+      )
+    }
+    <p class="mt-1 text-sm text-muted">{description}</p>
+  </div>
+</li>

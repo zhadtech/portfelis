@@ -5,6 +5,9 @@ import Footer from '../components/Footer.astro';
 import { site } from '../config/site';
 import { href } from '../lib/paths';
 import { usingSamples } from '../lib/content';
+// The Latin file of the heading face, preloaded so titles do not reflow on arrival.
+// Same file the stylesheet references, so Vite emits it once under one hashed URL.
+import displayFont from '@fontsource-variable/outfit/files/outfit-latin-wght-normal.woff2?url';
 
 interface Props {
   /** Page title, without the site name — this layout appends it. */
@@ -28,6 +31,7 @@ const showSampleNotice = import.meta.env.DEV && (await usingSamples());
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/svg+xml" href={href('/favicon.svg')} />
+    <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     {canonical && <link rel="canonical" href={canonical} />}
@@ -42,7 +46,7 @@ const showSampleNotice = import.meta.env.DEV && (await usingSamples());
   <body class="flex min-h-screen flex-col bg-page font-sans text-body">
     <a
       href="#main"
-      class="sr-only border-line bg-page text-ink focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-10 focus:border focus:px-4 focus:py-2 focus:ring-accent"
+      class="sr-only rounded-chip border-line bg-page text-ink shadow-card focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-10 focus:border focus:px-4 focus:py-2"
     >
       Skip to content
     </a>
@@ -51,7 +55,7 @@ const showSampleNotice = import.meta.env.DEV && (await usingSamples());
 
     {
       showSampleNotice && (
-        <p class="border-b border-line px-6 py-2 text-center text-sm text-muted sm:px-8">
+        <p class="border-b border-tint-soft bg-accent-wash px-4 py-2 text-center text-sm text-accent-deep sm:px-8">
           Showing placeholder content — the private content submodules are not mounted.
         </p>
       )

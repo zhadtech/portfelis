@@ -1,17 +1,22 @@
 ---
 interface Props {
   date: Date;
+  /**
+   * `long` — October 8, 2026 (default). `short` — Oct 8, 2026, for metadata rows.
+   * `day` — Oct 8, for lists already grouped under a year heading.
+   */
+  format?: 'long' | 'short' | 'day';
   class?: string;
 }
 
-const { date, class: className } = Astro.props;
+const { date, format = 'long', class: className } = Astro.props;
 
 // UTC throughout: frontmatter dates are calendar days, and rendering them in the
 // build machine's timezone shifts half of them by one.
 const iso = date.toISOString().slice(0, 10);
 const label = date.toLocaleDateString('en-US', {
-  year: 'numeric',
-  month: 'long',
+  year: format === 'day' ? undefined : 'numeric',
+  month: format === 'long' ? 'long' : 'short',
   day: 'numeric',
   timeZone: 'UTC',
 });

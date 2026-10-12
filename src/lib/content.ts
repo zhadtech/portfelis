@@ -83,6 +83,42 @@ export async function getPosts(): Promise<Post[]> {
   return visible(posts).sort(byNewest);
 }
 
+/** Blog: every post not marked research — including whatever an automation publishes. */
+export async function getNews(): Promise<Post[]> {
+  return (await getPosts()).filter((post) => post.data.kind === 'news');
+}
+
+/** Writing: curated long-form, marked `kind: research` in frontmatter. */
+export async function getResearch(): Promise<Post[]> {
+  return (await getPosts()).filter((post) => post.data.kind === 'research');
+}
+
+/**
+ * App-relative URL of a post. The section follows `kind`, so a post moves between Blog
+ * and Writing by changing one frontmatter line. Pass the result through `href()`.
+ */
+export function postPath(post: Post): string {
+  return post.data.kind === 'research' ? `/writing/${post.id}` : `/blog/${post.id}`;
+}
+
+/** Whole minutes at 200 words a minute, never below one. Counted from the raw Markdown. */
+export function readingMinutes(post: Post): number {
+  const words = post.body?.split(/\s+/).filter(Boolean).length ?? 0;
+  return Math.max(1, Math.round(words / 200));
+}
+
+/** Posts grouped by calendar year (UTC), newest year first, order within a year kept. */
+export function groupByYear(posts: readonly Post[]): { year: number; posts: Post[] }[] {
+  const years = new Map<number, Post[]>();
+  for (const post of posts) {
+    const year = post.data.date.getUTCFullYear();
+    years.set(year, [...(years.get(year) ?? []), post]);
+  }
+  return [...years.entries()]
+    .sort(([a], [b]) => b - a)
+    .map(([year, entries]) => ({ year, posts: entries }));
+}
+
 export async function getProjects(): Promise<Project[]> {
   const projects = (await resolve('projects', 'projectSample')) as Project[];
   return visible(projects).sort(byNewest);

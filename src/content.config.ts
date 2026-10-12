@@ -19,6 +19,9 @@ export const blogSchema = z.object({
   description: z.string(),
   date: z.coerce.date(),
   tags: z.array(z.string()).default([]),
+  // Which section a post belongs to. `news` (the default, so automated posts need no
+  // extra field) lists under Blog; `research` is curated long-form and lists under Writing.
+  kind: z.enum(['news', 'research']).default('news'),
   draft: z.boolean().default(false),
 });
 

@@ -1,57 +1,63 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Card from '../components/Card.astro';
 import ContactForm from '../components/ContactForm.astro';
+import Icon from '../components/Icon.astro';
+import PageHeader from '../components/PageHeader.astro';
 import { site, socials } from '../config/site';
 
 const hasForm = site.contactFormKey !== '';
 
-// Say only what is true of this build. Promising "the links below" when none are
-// configured is the kind of small contradiction a reader notices.
+// Say only what is true of this build, and nothing about how it was built: "the form is
+// not configured" is a note to the owner, not to a visitor.
 const lead = hasForm
-  ? 'A short note about what you are working on is enough to start. Replies usually go out within a couple of days.'
+  ? 'Hiring, or want to talk about something on this site? Send a message and I will get back to you.'
   : socials.length > 0
-    ? `Hi, I'm ${site.name}. The form is not set up for this build. You can reach me through the link below.`
-    : 'No contact channels are configured for this build yet.';
+    ? 'Hiring, or want to talk about something on this site? The links here are the best way to reach me.'
+    : 'No contact channels are set up yet.';
 ---
 
 <BaseLayout title="Contact" description={`Get in touch with ${site.name}.`}>
-  <div class="mx-auto w-full max-w-shell px-6 py-16 sm:px-8 sm:py-24">
-    <header class="max-w-measure border-b border-line pb-8">
-      <h1 class="text-3xl text-ink">Contact</h1>
-      <p class="mt-4 text-body">{lead}</p>
-    </header>
+  <div class="mx-auto w-full max-w-shell px-4 py-12 sm:px-8 sm:py-16">
+    <PageHeader title="Contact" icon="mail" lead={lead} />
 
-    <ContactForm />
+    <div class="sidebar-layout mt-10">
+      <div class="main">
+        <ContactForm />
 
-    {
-      import.meta.env.DEV && !hasForm && (
-        <p class="mt-8 max-w-measure text-sm text-muted">
-          Set <code class="font-mono">PUBLIC_CONTACT_FORM_KEY</code> in{' '}
-          <code class="font-mono">.env</code> to render the form. See{' '}
-          <code class="font-mono">.env.example</code>.
-        </p>
-      )
-    }
+        {
+          import.meta.env.DEV && !hasForm && (
+            <p class="max-w-measure text-sm text-muted">
+              Set <code class="font-mono">PUBLIC_CONTACT_FORM_KEY</code> in{' '}
+              <code class="font-mono">.env</code> to render the form. See{' '}
+              <code class="font-mono">.env.example</code>.
+            </p>
+          )
+        }
+      </div>
 
-    {
-      socials.length > 0 && (
-        <section class="mt-16">
-          <h2 class="text-sm font-semibold tracking-wide text-ink uppercase">Elsewhere</h2>
-          <ul class="mt-4 border-t border-line">
-            {socials.map((social) => (
-              <li class="border-b border-line">
-                <a
-                  href={social.url}
-                  rel="me noopener"
-                  class="block py-3 text-sm text-accent-strong transition-colors duration-150 hover:bg-accent-wash"
-                >
-                  {social.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )
-    }
+      {
+        socials.length > 0 && (
+          <aside class="lead" aria-label="Elsewhere">
+            <Card title="Elsewhere" icon="link">
+              <ul class="space-y-2">
+                {socials.map((social) => (
+                  <li>
+                    <a
+                      href={social.url}
+                      rel="me noopener"
+                      class="flex items-center gap-2.5 transition-colors duration-150 hover:text-accent-strong [&>svg]:text-muted"
+                    >
+                      <Icon name={social.icon} class="size-[1.15em]" />
+                      {social.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          </aside>
+        )
+      }
+    </div>
   </div>
 </BaseLayout>

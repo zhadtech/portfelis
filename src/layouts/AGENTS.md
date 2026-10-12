@@ -1,9 +1,10 @@
 # src/layouts — page shells
 
-| File                | What it does                                                                                                                                                                                                                                                                                                             |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `BaseLayout.astro`  | The document. Takes `title` and `description`; composes the title as `<title> · <site name>` (home uses the site name alone), emits the canonical link, favicon and RSS autodiscovery, then renders the skip link, `Header`, `<main id="main">`, and `Footer`. Also renders the placeholder-content notice, in dev only. |
-| `ProseLayout.astro` | `BaseLayout` plus the article wrapper used by blog posts and project detail pages. Three slots: `header` (title and metadata, above a hairline rule), the default slot (rendered Markdown, inside `.prose`), and an optional `footer` — whose rule only appears if something fills the slot.                             |
+| File                | What it does                                                                                                                                                                                                                                                                                                                                                           |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BaseLayout.astro`  | The document. Takes `title` and `description`; composes the title as `<title> · <site name>` (home uses the site name alone), emits the canonical link, favicon, a preload for the heading font's Latin file, and RSS autodiscovery, then renders the skip link, `Header`, `<main id="main">`, and `Footer`. Also renders the placeholder-content notice, in dev only. |
+| `ProseLayout.astro` | `BaseLayout` plus the centred article column used by posts and project detail pages. Three slots: `header` (centred title and metadata, above a dotted rule), the default slot (rendered Markdown, inside `.prose`), and an optional `footer` — whose rule only appears if something fills the slot.                                                                   |
+| `PostLayout.astro`  | `ProseLayout` filled in for one post: draft marker, title, description, date and reading time, tags, the rendered body, and a pill back to the section index. Takes `post` and `back`. Shared by `blog/[slug]` and `writing/[slug]`, so the two sections cannot drift apart.                                                                                           |
 
 ## Rules
 
@@ -29,4 +30,8 @@ Deliberately out of scope, and each is a small addition here:
 
 - Don't add a dark mode toggle. The site is light-only by decision; see `PROGRESS.md`.
 - Don't put data fetching in a layout. `usingSamples()` is the one exception and it is
-  gated on `import.meta.env.DEV`.
+  gated on `import.meta.env.DEV`. (`PostLayout` calls `render()` on the entry it is
+  handed; that renders, it does not query a collection.)
+- Don't drop the font preload in `BaseLayout`. It imports the same file the stylesheet
+  references, so Vite emits one asset under one hashed URL; without it, titles render in
+  the fallback face and then reflow.

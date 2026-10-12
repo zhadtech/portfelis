@@ -7,17 +7,19 @@ as a page — a plain `AGENTS.md` here ships to the live site as `/AGENTS`. The 
 is Astro's own "not a route" marker. This folder is the only place the documentation file
 is spelled `_AGENTS.md`; `npm run docs:check` accepts either name.
 
-| File                    | What it does                                                                                                                                                                                                        |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `index.astro`           | Home. Tagline as `h1`, then the three highest-priority projects (featured first), the three newest posts, and a line pointing at contact. Content-led on purpose: the first screen shows work, not an introduction. |
-| `contact.astro`         | Contact. Renders `ContactForm` when a form key is configured and an explanatory line when not, followed by the configured social links. Adds a dev-only hint about `PUBLIC_CONTACT_FORM_KEY`.                       |
-| `404.astro`             | Not-found page. Links home and to every nav destination.                                                                                                                                                            |
-| `rss.xml.ts`            | The feed. `GET` returns `@astrojs/rss` output from `getPosts()`, with the base path folded into the channel link so items resolve under the project subpath.                                                        |
-| `projects/index.astro`  | The project grid, featured first then newest.                                                                                                                                                                       |
-| `projects/[slug].astro` | One project. `getStaticPaths` maps every entry from `getProjects()`; renders metadata, links, an optional optimised `cover` image, and the Markdown body in `ProseLayout`.                                          |
-| `blog/index.astro`      | Post list with a tag directory showing counts.                                                                                                                                                                      |
-| `blog/[slug].astro`     | One post. Same shape as the project detail page, with tags instead of tech.                                                                                                                                         |
-| `blog/tags/[tag].astro` | Posts for one tag. `getStaticPaths` comes from `getAllTags()`, so a tag page exists only when a visible post carries it.                                                                                            |
+| File                    | What it does                                                                                                                                                                                                                                                                              |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `index.astro`           | Home, in `.sidebar-layout`. Main column, strongest material first: up to three projects (featured first), up to three Writing pieces, then the four newest Blog posts as compact rows — each section only when it has entries. Sidebar: `ProfileCard` (the page's `h1`) and a Links card. |
+| `contact.astro`         | Contact. `ContactForm` when a form key is configured; an Elsewhere card with the social links beside it. The lead line never mentions configuration — that is for the owner, not a visitor. Adds a dev-only hint about `PUBLIC_CONTACT_FORM_KEY`.                                         |
+| `404.astro`             | Not-found page. One pill per `nav` entry; Home is the first of them.                                                                                                                                                                                                                      |
+| `rss.xml.ts`            | The feed. `GET` returns `@astrojs/rss` output from `getPosts()` — Blog and Writing together — linking each item through `postPath()`, with the base path folded into the channel link so items resolve under the project subpath.                                                         |
+| `projects/index.astro`  | The project list, featured first then newest, at reading width.                                                                                                                                                                                                                           |
+| `projects/[slug].astro` | One project. `getStaticPaths` maps every entry from `getProjects()`; renders a centred header (letter tile, title, date, tech badges, link pills), an optional optimised `cover` image, and the Markdown body in `ProseLayout`.                                                           |
+| `writing/index.astro`   | Writing: curated long-form, from `getResearch()`, as full `PostCard` entries with tags. Has its own empty state pointing at the Blog.                                                                                                                                                     |
+| `writing/[slug].astro`  | One Writing piece, from `getResearch()`, in `PostLayout`.                                                                                                                                                                                                                                 |
+| `blog/index.astro`      | Blog: everything that is not research, from `getNews()`, grouped by year as `PostRow`s, with a Topics card of all tags beside it.                                                                                                                                                         |
+| `blog/[slug].astro`     | One Blog post, from `getNews()`, in `PostLayout`.                                                                                                                                                                                                                                         |
+| `blog/tags/[tag].astro` | Posts for one tag, from both sections — rows say when a post is from Writing. `getStaticPaths` comes from `getAllTags()`, so a tag page exists only when a visible post carries it.                                                                                                       |
 
 ## Rules
 
@@ -31,6 +33,9 @@ is spelled `_AGENTS.md`; `npm run docs:check` accepts either name.
 - A page that lists nothing must still look finished. Each index has an empty state.
 - Drafts get no page in production because `getPosts()` and `getProjects()` filter them
   before `getStaticPaths` sees them. The detail pages show a "Draft" marker in dev.
+- **A post has exactly one URL.** `blog/[slug]` builds only `getNews()` and
+  `writing/[slug]` only `getResearch()`, and every link goes through `postPath()`. Never
+  hand-write `/blog/<id>` — a research post linked that way 404s.
 
 ## Don't
 

@@ -7,14 +7,14 @@ import { site } from '../config/site';
 const ENDPOINT = 'https://api.web3forms.com/submit';
 
 const FIELD =
-  'border-line bg-page text-ink focus:border-accent w-full border px-3 py-2 text-base transition-colors duration-150 outline-none';
-const LABEL = 'text-ink block text-sm font-medium';
+  'w-full rounded-chip border border-line bg-page px-3 py-2 text-base text-ink transition-colors duration-150 focus:border-accent';
+const LABEL = 'block text-sm font-semibold text-ink';
 ---
 
 {
   /* Never render a form that cannot submit — the page decides what to show instead. */
   site.contactFormKey && (
-    <form id="contact-form" method="POST" action={ENDPOINT} class="mt-10 grid max-w-measure gap-6">
+    <form id="contact-form" method="POST" action={ENDPOINT} class="grid max-w-measure gap-6">
       <input type="hidden" name="access_key" value={site.contactFormKey} />
       <input type="hidden" name="subject" value={`New message via ${site.name}`} />
       <input type="hidden" name="from_name" value={site.name} />
@@ -66,9 +66,10 @@ const LABEL = 'text-ink block text-sm font-medium';
       </div>
 
       <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+        {/* PillLink's solid style, repeated because this is a <button>, not a link. */}
         <button
           type="submit"
-          class="border border-accent px-5 py-2 text-sm text-accent-strong transition-colors duration-150 hover:bg-accent-wash disabled:cursor-not-allowed disabled:border-line disabled:text-muted"
+          class="inline-flex items-center gap-1.5 rounded-full bg-tint-soft px-5 py-2.5 text-xs leading-none font-bold tracking-wider text-accent-deep uppercase shadow-pill transition-colors duration-150 hover:bg-accent-strong hover:text-on-accent disabled:cursor-not-allowed disabled:bg-surface disabled:text-muted disabled:shadow-none"
         >
           Send message
         </button>

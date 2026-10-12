@@ -18,24 +18,34 @@ const items = tags.map((tag) =>
 );
 ---
 
-<ul class:list={['flex flex-wrap gap-2', className]}>
+<ul class:list={['flex flex-wrap gap-1.5', className]}>
   {
-    items.map(({ tag, slug, count }) => (
-      <li>
-        <a
-          href={href(`/blog/tags/${slug}`)}
-          aria-current={slug === activeSlug ? 'page' : undefined}
-          class:list={[
-            'inline-flex items-baseline gap-1.5 rounded-sm border px-2 py-0.5 text-sm transition-colors duration-150',
-            slug === activeSlug
-              ? 'border-accent text-accent-strong'
-              : 'border-line text-muted hover:border-accent hover:text-accent-strong',
-          ]}
-        >
-          {tag}
-          {showCounts && count > 0 && <span class="tabular text-xs opacity-70">{count}</span>}
-        </a>
-      </li>
-    ))
+    items.map(({ tag, slug, count }) => {
+      const counted = showCounts && count > 0;
+      return (
+        <li>
+          <a
+            href={href(`/blog/tags/${slug}`)}
+            aria-current={slug === activeSlug ? 'page' : undefined}
+            class:list={[
+              'inline-flex items-center gap-1.5 rounded-chip border py-0.5 pl-2 text-sm transition-colors duration-150',
+              counted ? 'pr-1' : 'pr-2',
+              slug === activeSlug
+                ? 'border-accent bg-accent-wash text-accent-strong'
+                : 'border-line bg-surface text-body hover:border-accent hover:text-accent-strong',
+            ]}
+          >
+            {tag}
+            {counted && (
+              <span class="tabular rounded-[3px] bg-tint-soft px-1.5 text-xs font-semibold text-accent-deep">
+                <span class="sr-only">(</span>
+                {count}
+                <span class="sr-only"> posts)</span>
+              </span>
+            )}
+          </a>
+        </li>
+      );
+    })
   }
 </ul>

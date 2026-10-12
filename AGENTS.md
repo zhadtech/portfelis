@@ -30,6 +30,11 @@ publish a plain `AGENTS.md` in that folder as a page, and `_` is its "not a rout
 - **No new runtime JavaScript.** The only script that ships is the contact form's
   submit handler.
 - **New dependencies must be logged** in `PROGRESS.md` under Decisions.
+- **Add a dependency by regenerating the lockfile**, not with `npm install <pkg>` alone:
+  add it to `package.json`, then `rm -rf node_modules package-lock.json && npm install`.
+  On macOS a plain `npm install <pkg>` prunes `@emnapi/core` and `@emnapi/runtime` from
+  the lockfile, and CI's `npm ci` on Linux then fails with `Missing: @emnapi/runtime`.
+  Check with `grep '"node_modules/@emnapi/runtime"' package-lock.json` before pushing.
 
 ## When you add, remove, or rename a file
 

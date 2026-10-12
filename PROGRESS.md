@@ -411,6 +411,16 @@ deinit`) reproduces the fresh-clone state exactly and is the honest test;
   first Tab, focus ring visible on the blue bar; every text/background pair ≥ 4.5:1; no
   `<script>` outside `/contact`; no text glued to an adjacent link in any built page.
 
+- **2026-10-12** — The redesign's first deploy failed at `npm ci`: `Missing:
+@emnapi/runtime@1.11.3 from lock file`, the 2026-08-23 problem again. Cause: adding
+  `@fontsource-variable/outfit` with `npm install <pkg>` on darwin-arm64 pruned both
+  `@emnapi` entries, which only the Linux wasm32 optionals need. Fixed by regenerating the
+  lockfile, which also lifted Astro 7.2.4 → 7.3.8, Vite 8.2.2 → 8.3.4 and some patch
+  versions within their existing ranges. Verified by diffing the full build against the
+  7.2.4 build: same pages, byte-identical CSS, and the only HTML change is whitespace
+  inside a flex pill. The how-to now sits next to the dependency rule in `AGENTS.md`, where
+  it is read before the install rather than found in this log after the failure.
+
 ## Open questions
 
 None outstanding.

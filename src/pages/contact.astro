@@ -7,13 +7,14 @@ import PageHeader from '../components/PageHeader.astro';
 import { site, socials } from '../config/site';
 
 const hasForm = site.contactFormKey !== '';
+const hasEmail = site.contactEmail !== '';
 
 // Say only what is true of this build, and nothing about how it was built: "the form is
 // not configured" is a note to the owner, not to a visitor.
 const lead = hasForm
   ? 'Hiring, or want to talk about something on this site? Send a message and I will get back to you.'
-  : socials.length > 0
-    ? 'Hiring, or want to talk about something on this site? The links here are the best way to reach me.'
+  : hasEmail || socials.length > 0
+    ? 'Hiring, or want to talk about something on this site? Email or the links here are the best way to reach me.'
     : 'No contact channels are set up yet.';
 ---
 
@@ -37,10 +38,21 @@ const lead = hasForm
       </div>
 
       {
-        socials.length > 0 && (
+        (hasEmail || socials.length > 0) && (
           <aside class="lead" aria-label="Elsewhere">
             <Card title="Elsewhere" icon="link">
               <ul class="space-y-2">
+                {hasEmail && (
+                  <li>
+                    <a
+                      href={`mailto:${site.contactEmail}`}
+                      class="flex items-center gap-2.5 break-all transition-colors duration-150 hover:text-accent-strong [&>svg]:text-muted"
+                    >
+                      <Icon name="mail" class="size-[1.15em] shrink-0" />
+                      {site.contactEmail}
+                    </a>
+                  </li>
+                )}
                 {socials.map((social) => (
                   <li>
                     <a

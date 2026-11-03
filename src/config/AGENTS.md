@@ -1,8 +1,8 @@
 # src/config — the settings file
 
-| File      | What it does                                                                                                                                                                                                                                                                                                                                          |
-| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `site.ts` | The single source of truth for identity. Exports `site` (name, tagline, handle, url, contact form key), `nav` (the header tabs, in order, each with an icon — Home first), and `socials` (each with an icon; only the links with a configured URL survive the filter). Every value is read from `import.meta.env` with a neutral placeholder default. |
+| File      | What it does                                                                                                                                                                                                                                                                                                                                                         |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `site.ts` | The single source of truth for identity. Exports `site` (name, tagline, handle, url, contact form key, contact email), `nav` (the header tabs, in order, each with an icon — Home first), and `socials` (each with an icon; only the links with a configured URL survive the filter). Every value is read from `import.meta.env` with a neutral placeholder default. |
 
 ## Rules
 

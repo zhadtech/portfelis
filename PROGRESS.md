@@ -420,6 +420,7 @@ deinit`) reproduces the fresh-clone state exactly and is the honest test;
   7.2.4 build: same pages, byte-identical CSS, and the only HTML change is whitespace
   inside a flex pill. The how-to now sits next to the dependency rule in `AGENTS.md`, where
   it is read before the install rather than found in this log after the failure.
+- **2026-11-04** — A public contact email lives in repository variable `PUBLIC_CONTACT_EMAIL`, read in `site.ts` and shown as a `mailto:` link in the Elsewhere card on `/contact`. It is a forwarding alias, not a personal address, so it can be switched off if spam starts; the form key route stays available.
 
 ## Open questions
 

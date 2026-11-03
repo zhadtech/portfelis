@@ -19,6 +19,7 @@ open that file, then read that folder's `AGENTS.md`.
 | Add or rename a nav tab, or change its icon           | `src/config/site.ts` → `nav`                                                                  |
 | Add or remove a social link                           | `src/config/site.ts` → `socials`, and `.env.example`                                          |
 | Change the contact form endpoint or key               | `src/config/site.ts` → `contactFormKey`, and `.env.example`                                   |
+| Change the public contact email                       | `src/config/site.ts` → `contactEmail`, set via `PUBLIC_CONTACT_EMAIL` (repo variable)         |
 | Add a new environment variable                        | `src/config/site.ts` + `.env.example` + `.github/workflows/deploy.yml`                        |
 | Add a build-behaviour env variable (not identity)     | `src/env.d.ts` + `.env.example` + the file that reads it                                      |
 | Fix a link that 404s on GitHub Pages                  | `src/lib/paths.ts` → `href()`                                                                 |

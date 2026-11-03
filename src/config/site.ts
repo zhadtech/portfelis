@@ -34,6 +34,8 @@ export const site = {
   url: value(import.meta.env.PUBLIC_SITE_URL, 'https://example.github.io'),
   /** Web3Forms access key. Public by design. Empty ⇒ the contact page shows links instead. */
   contactFormKey: value(import.meta.env.PUBLIC_CONTACT_FORM_KEY),
+  /** A public contact address, ideally a forwarding alias. Empty ⇒ no email is shown. */
+  contactEmail: value(import.meta.env.PUBLIC_CONTACT_EMAIL),
 } as const;
 
 /**

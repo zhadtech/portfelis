@@ -421,6 +421,7 @@ deinit`) reproduces the fresh-clone state exactly and is the honest test;
   inside a flex pill. The how-to now sits next to the dependency rule in `AGENTS.md`, where
   it is read before the install rather than found in this log after the failure.
 - **2026-11-04** — A public contact email lives in repository variable `PUBLIC_CONTACT_EMAIL`, read in `site.ts` and shown as a `mailto:` link in the Elsewhere card on `/contact`. It is a forwarding alias, not a personal address, so it can be switched off if spam starts; the form key route stays available.
+- **2026-11-05** — The Ginga Sengoku Gunyuuden Rai patch is served from `public/ginga-sengoku-gunyuuden-rai.bps`, the one piece of real content in this repo. The owner chose to share it; the projects repo is private and the site emits only a page's Markdown and images, so a link from the page to a file there would 404. It is a patch only, no ROM.
 
 ## Open questions
 

@@ -54,9 +54,10 @@ Everything in `public/` is copied to the site root untouched, which is why this 
 documentation lives here rather than in a `public/AGENTS.md` — that file would be
 published too.
 
-| File                 | What it does                                                                                                                                                                                           |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `public/favicon.svg` | The tab icon. Three left-aligned bars on a solid tile. Its fill is the **only** hardcoded color in the repository: a static SVG cannot read `--hue-brand`, so update it by hand if you change the hue. |
+| File                                     | What it does                                                                                                                                                                                                                |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `public/favicon.svg`                     | The tab icon. Three left-aligned bars on a solid tile. Its fill is the **only** hardcoded color in the repository: a static SVG cannot read `--hue-brand`, so update it by hand if you change the hue.                      |
+| `public/ginga-sengoku-gunyuuden-rai.bps` | The English fan-translation patch (BPS) linked from the private `ginga-sengoku-gunyuuden-rai` project page. Here because the content repo is private and the site only emits a page's Markdown and images. Contains no ROM. |
 
 Reference these files as `href('/favicon.svg')`, never `/favicon.svg`. Nothing here is
 processed, hashed, or optimised — images that should go through Astro's image pipeline
